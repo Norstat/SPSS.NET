@@ -112,6 +112,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EncodingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpssCasesCollectionTest.cs" />
     <Compile Include="SpssConvertTest.cs" />

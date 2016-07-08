@@ -7,6 +7,16 @@ using System.Runtime.CompilerServices;
 namespace Spss
 {
     #region Enumerables
+
+    /// <summary>
+    /// Interface encoding
+    /// </summary>
+    public enum InterfaceEncoding : int
+    {
+        SPSS_ENCODING_CODEPAGE = 0,
+        SPSS_ENCODING_UTF8 = 1,
+    }
+
     /// <summary>
     /// Error/warning codes that calls to SPSS methods can return.
     /// </summary>
@@ -223,6 +233,15 @@ namespace Spss
         /// MAX7SUBTYPE
         /// </summary>
         SPSS_INVALID_7SUBTYPE = 57,
+        /// <summary>
+        /// Invalid encoding
+        /// </summary>
+        SPSS_INVALID_ENCODING = 59, // not confirmed
+
+        /// <summary>
+        /// Files are open, which prevents encoding from changing
+        /// </summary>
+        SPSS_FILES_OPEN = 60, // not confirmed
 
         /// <summary>
         /// Existing multiple response set definitions are invalid
@@ -2946,7 +2965,7 @@ namespace Spss
         /// <remarks>
         /// This function sets the label of a variable.
         /// </remarks>
-        protected delegate ReturnCode spssSetVarLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varLabel);
+        protected delegate ReturnCode spssSetVarLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [In] IntPtr varLabel);
         protected static spssSetVarLabelDelegate spssSetVarLabelImpl;
 
         /// <summary>
@@ -3265,6 +3284,33 @@ namespace Spss
         protected static spssWholeCaseOutDelegate spssWholeCaseOutImpl;
 
         /// <summary>
+        /// The I/O Module's locale is separate from that of the client application.  When the I/O Module is first loaded, 
+        /// its locale is set to the system default.  The spssSetLocale function gives the client application control over 
+        /// the I/O Module's locale.  The parameters and return value are identical to those for the C run-time function setlocal
+        /// </summary>
+        /// <remarks>
+        /// See also spssGetFileEncoding 
+        /// </remarks>
+        /// <param name="category">A locale category, for example LC_ALL or LC_CTYPE.  These are defined in the header file locale.h. </param>
+        /// <param name="locale">A locale, for example "Japanese.932".</param>
+        /// <returns>The function returns the resulting locale, for example "French_Canada.1252"</returns>
+        protected delegate IntPtr spssSetLocale(int category, string locale);
+        protected static spssSetLocale spssSetLocaleImpl;
+
+        /// <summary>
+        /// This function returns the current interface encoding. 
+        /// </summary>
+        /// <returns>InterfaceEncoding</returns>
+        public delegate InterfaceEncoding SpssGetInterfaceEncodingDelegate();
+        public static SpssGetInterfaceEncodingDelegate spssGetInterfaceEncodingImpl;
+
+        /// <summary>
+        /// This function sets the current interface encoding. 
+        /// </summary>
+        public delegate ReturnCode SpssSetInterfaceEncodingDelegate(InterfaceEncoding value);
+        public static SpssSetInterfaceEncodingDelegate spssSetInterfaceEncodingImpl;
+
+        /// <summary>
         /// Constructor for <see cref="SpssThinWrapper"/> class.  Not to be used.
         /// </summary>
         /// <remarks>
@@ -3417,6 +3463,9 @@ namespace Spss
             spssSysmisValImpl = (spssSysmisValDelegate)GetSpssDelegate("spssSysmisVal", typeof(spssSysmisValDelegate));
             spssWholeCaseInImpl = (spssWholeCaseInDelegate)GetSpssDelegate("spssWholeCaseIn", typeof(spssWholeCaseInDelegate));
             spssWholeCaseOutImpl = (spssWholeCaseOutDelegate)GetSpssDelegate("spssWholeCaseOut", typeof(spssWholeCaseOutDelegate));
+            spssGetInterfaceEncodingImpl = (SpssGetInterfaceEncodingDelegate)GetSpssDelegate("spssGetInterfaceEncoding", typeof(SpssGetInterfaceEncodingDelegate));
+            spssSetInterfaceEncodingImpl = (SpssSetInterfaceEncodingDelegate)GetSpssDelegate("spssSetInterfaceEncoding", typeof(SpssSetInterfaceEncodingDelegate));
+            spssSetLocaleImpl = (spssSetLocale)GetSpssDelegate("spssSetLocale", typeof(spssSetLocale));
         }
 
         private static IntPtr spssDllHandle = IntPtr.Zero;

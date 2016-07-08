@@ -179,6 +179,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="EmbeddedResources.cs" />
+    <Compile Include="EncodedString.cs" />
     <Compile Include="Project.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -207,6 +208,7 @@
     <Compile Include="SpssNumericVariableValueLabels.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SpssWrapper.cs" />
     <Compile Include="SpssSafeWrapper.cs">
       <SubType>Code</SubType>
     </Compile>

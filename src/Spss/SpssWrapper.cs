@@ -1,5 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
+using Spss;
 
 namespace Spss
 {
@@ -7,14 +9,9 @@ namespace Spss
     /// Very thin SpssSafeWrapper class for functions exposed by spssio32.dll.
     /// </summary>
     [CLSCompliant(false)]
-    public class SpssSafeWrapper : SpssThinWrapper
+    public class SpssWrapper : SpssThinWrapper
     {
-        /// <summary>
-        /// Creates an instance of the <see cref="SpssSafeWrapper"/> class.
-        /// </summary>
-        protected SpssSafeWrapper()
-        {
-        }
+        protected Encoding Encoding { get; }
 
         // These lengths were extracted from the SPSS documentation 
         // rather than any header file.
@@ -24,16 +21,20 @@ namespace Spss
         public const int SPSS_DATESTAMP_LENGTH = 9;
         public const int SPSS_TIMESTAMP_LENGTH = 8;
 
-        #region veg
-
-        public static Int32 SPSS_STRING(Int32 size)
+        /// <summary>
+        /// Creates an instance of the <see cref="SpssWrapper"/> class.
+        /// </summary>
+        public SpssWrapper() : this(System.Text.Encoding.Default)
         {
-            return size;
         }
 
-        public const Int32 SPSS_NUMERIC = 0;
-
-        #endregion veg
+        /// <summary>
+        /// Creates an instance of the <see cref="SpssWrapper"/> class.
+        /// </summary>
+        public SpssWrapper(Encoding encoding)
+        {
+            this.Encoding = encoding;
+        }
 
         /// <summary>
         /// Opens an SPSS file for reading.
@@ -59,7 +60,7 @@ namespace Spss
         /// used for subsequent operations on the file.
         /// Files opened with spssOpenRead should be closed with <see cref="SpssThinWrapper.spssCloseReadDelegate"/>.
         /// </remarks>
-        public static ReturnCode spssOpenRead(string fileName, out int handle)
+        public ReturnCode spssOpenRead(string fileName, out int handle)
         {
             return SpssThinWrapper.spssOpenReadImpl(ref fileName, out handle);
         }
@@ -83,7 +84,7 @@ namespace Spss
         /// handle that should be used for subsequent operations on the file.
         /// Files opened with spssOpenWrite should be closed with <see cref="SpssThinWrapper.spssCloseWriteDelegate"/>.
         /// </remarks>
-        public static ReturnCode spssOpenWrite(string fileName, out int handle)
+        public ReturnCode spssOpenWrite(string fileName, out int handle)
         {
             return SpssThinWrapper.spssOpenWriteImpl(ref fileName, out handle);
         }
@@ -105,7 +106,7 @@ namespace Spss
         /// <remarks>
         /// This function reports the name of the case weight variable. 
         /// </remarks>
-        public static ReturnCode spssGetCaseWeightVar(int handle, out string varName)
+        public ReturnCode spssGetCaseWeightVar(int handle, out string varName)
         {
             varName = new string(' ', SPSS_MAX_VARNAME + 1);
             ReturnCode result = SpssThinWrapper.spssGetCaseWeightVarImpl(handle, ref varName);
@@ -138,7 +139,7 @@ namespace Spss
         /// spssGetDEWInfo, spssGetDEWFirst will return SPSS_NO_DEW if the file was written
         /// with a byte order that is the reverse of that of the host.
         /// </remarks>
-        public static ReturnCode spssGetDEWFirst(int handle, out string data, int maxData)
+        public ReturnCode spssGetDEWFirst(int handle, out string data, int maxData)
         {
             data = new string(' ', maxData);
             int len;
@@ -166,7 +167,7 @@ namespace Spss
         /// GUID. Note that the spssOpenWriteCopy function will not copy the source file’s
         /// GUID. spssGetDEWGUID allows the client to read a file’s GUID, if any. 
         /// </remarks>
-        public static ReturnCode spssGetDEWGUID(int handle, out string asciiGUID)
+        public ReturnCode spssGetDEWGUID(int handle, out string asciiGUID)
         {
             asciiGUID = new string(' ', SPSS_GUID_LENGTH + 1);
             ReturnCode result = SpssThinWrapper.spssGetDEWGUIDImpl(handle, ref asciiGUID);
@@ -203,7 +204,7 @@ namespace Spss
         /// <see cref="SpssThinWrapper.spssGetDEWInfoDelegate"/>, <see cref="spssGetDEWFirst"/> will return SPSS_NO_DEW if the file was written
         /// with a byte order that is the reverse of that of the host.
         /// </remarks>
-        public static ReturnCode spssGetDEWNext(int handle, out string data, int maxData)
+        public ReturnCode spssGetDEWNext(int handle, out string data, int maxData)
         {
             data = new string(' ', maxData);
             int len;
@@ -228,7 +229,7 @@ namespace Spss
         /// This function retrieves the file label of the SPSS data file associated with 
         /// <paramref>handle</paramref> into the <paramref>id</paramref> parameter.
         /// </remarks>
-        public static ReturnCode spssGetIdString(int handle, out string id)
+        public ReturnCode spssGetIdString(int handle, out string id)
         {
             id = new string(' ', SPSS_MAX_IDSTRING + 1); // leave room for null terminator
             ReturnCode result = SpssThinWrapper.spssGetIdStringImpl(handle, ref id);
@@ -259,7 +260,7 @@ namespace Spss
         /// compression scheme code (5), big/little-endian code (6), and character representation
         /// code (7).
         /// </remarks>
-        public static ReturnCode spssGetReleaseInfo(int handle, out int[] relInfo)
+        public ReturnCode spssGetReleaseInfo(int handle, out int[] relInfo)
         {
             relInfo = new int[8];
             ReturnCode result = SpssThinWrapper.spssGetReleaseInfoImpl(handle, relInfo);
@@ -281,7 +282,7 @@ namespace Spss
         /// <remarks>
         /// This function returns the name of the system under which the file was created.
         /// </remarks>
-        public static ReturnCode spssGetSystemString(int handle, out string sysName)
+        public ReturnCode spssGetSystemString(int handle, out string sysName)
         {
             sysName = new string(' ', SPSS_SYSTEM_STRING_LENGTH + 1); // leave room for null terminator
             ReturnCode result = SpssThinWrapper.spssGetSystemStringImpl(handle, ref sysName);
@@ -304,7 +305,7 @@ namespace Spss
         /// <remarks>
         /// This function retrieves the text data created by TextSmart.
         /// </remarks>
-        public static ReturnCode spssGetTextInfo(int handle, out string textInfo)
+        public ReturnCode spssGetTextInfo(int handle, out string textInfo)
         {
             textInfo = new string(' ', SPSS_MAX_TEXTINFO + 1);
             ReturnCode result = SpssThinWrapper.spssGetTextInfoImpl(handle, ref textInfo);
@@ -332,7 +333,7 @@ namespace Spss
         /// date is a 9-byte string in dd mmm yy format (27 Feb 96). The creation time is a 
         /// 8-byte oypcbi in hh:mm:ss format (13:12:15).
         /// </remarks>
-        public static ReturnCode spssGetTimeStamp(int handle, out string fileDate, out string fileTime)
+        public ReturnCode spssGetTimeStamp(int handle, out string fileDate, out string fileTime)
         {
             fileDate = new string(' ', SPSS_DATESTAMP_LENGTH + 1);
             fileTime = new string(' ', SPSS_TIMESTAMP_LENGTH + 1);
@@ -365,7 +366,7 @@ namespace Spss
         /// This function gets the value of a string variable for the current case, which is the case
         /// read by the most recent call to <see cref="SpssThinWrapper.spssReadCaseRecordDelegate"/>. 
         /// </remarks>
-        public static ReturnCode spssGetValueChar(int handle, double varHandle, out string value)
+        public ReturnCode spssGetValueChar(int handle, double varHandle, out string value)
         {
             value = new string(' ', SPSS_MAX_LONGSTRING + 1); // leave room for null terminator
             ReturnCode result = SpssThinWrapper.spssGetValueCharImpl(handle, varHandle, ref value, value.Length);
@@ -400,7 +401,7 @@ namespace Spss
         /// <remarks>
         /// This function reports the value of the alignment attribute of a variable.
         /// </remarks>
-        public static ReturnCode spssGetVarAlignment(int handle, string varName, out AlignmentCode alignment)
+        public ReturnCode spssGetVarAlignment(int handle, string varName, out AlignmentCode alignment)
         {
             return SpssThinWrapper.spssGetVarAlignmentImpl(handle, ref varName, out alignment);
         }
@@ -440,7 +441,7 @@ namespace Spss
         /// appropriate number of missing values is copied to the <paramref>missingVal1</paramref>,
         /// <paramref>missingVal2</paramref>, and <paramref>missingVal3</paramref> parameters. 
         /// </remarks>
-        public static ReturnCode spssGetVarCMissingValues(int handle, string varName, out MissingValueFormatCode missingFormat, out string missingVal1, out string missingVal2, out string missingVal3)
+        public ReturnCode spssGetVarCMissingValues(int handle, string varName, out MissingValueFormatCode missingFormat, out string missingVal1, out string missingVal2, out string missingVal3)
         {
             missingVal1 = new string(' ', SPSS_MAX_SHORTSTRING + 1);
             missingVal2 = new string(' ', SPSS_MAX_SHORTSTRING + 1);
@@ -484,7 +485,7 @@ namespace Spss
         /// zero is special and means that the SPSS Data Editor, which is the primary user of this
         /// attribute, will set an appropriate width using its own algorithm.
         /// </remarks>
-        public static ReturnCode spssGetVarColumnWidth(int handle, string varName, out int columnWidth)
+        public ReturnCode spssGetVarColumnWidth(int handle, string varName, out int columnWidth)
         {
             return SpssThinWrapper.spssGetVarColumnWidthImpl(handle, ref varName, out columnWidth);
         }
@@ -517,7 +518,7 @@ namespace Spss
         /// The type code is an integer in the range 0–255, 0 indicating a numeric
         /// variable and a positive value indicating a string variable of that size.
         /// </remarks>
-        public static ReturnCode spssGetVarInfo(int handle, int iVar, out string varName, out int varType)
+        public ReturnCode spssGetVarInfo(int handle, int iVar, out string varName, out int varType)
         {
             varName = new string(' ', SpssSafeWrapper.SPSS_MAX_VARNAME + 1);
             ReturnCode result = SpssThinWrapper.spssGetVarInfoImpl(handle, iVar, ref varName, out varType);
@@ -550,7 +551,7 @@ namespace Spss
         /// with an output file, the dictionary must be written with <see cref="SpssThinWrapper.spssCommitHeaderDelegate"/> 
         /// before variable handles can be obtained via spssGetVarHandle.
         /// </remarks>
-        public static ReturnCode spssGetVarHandle(int handle, string varName, out double varHandle)
+        public ReturnCode spssGetVarHandle(int handle, string varName, out double varHandle)
         {
             return SpssThinWrapper.spssGetVarHandleImpl(handle, ref varName, out varHandle);
         }
@@ -578,7 +579,7 @@ namespace Spss
         /// <paramref>varLabel</paramref>.  To get labels more than 120 characters long, use
         /// the spssGetVarLabelLong function.
         /// </remarks>
-        public static ReturnCode spssGetVarLabel(int handle, string varName, out string varLabel)
+        public ReturnCode spssGetVarLabel(int handle, string varName, out string varLabel)
         {
             int len;
             varLabel = new string(' ', SPSS_MAX_LONGSTRING + 1); // leave room for null terminator
@@ -608,7 +609,7 @@ namespace Spss
         /// <remarks>
         /// This function reports the value of the measurement level attribute of a variable.
         /// </remarks>
-        public static ReturnCode spssGetVarMeasureLevel(int handle, string varName, out MeasurementLevelCode measureLevel)
+        public ReturnCode spssGetVarMeasureLevel(int handle, string varName, out MeasurementLevelCode measureLevel)
         {
             int measureLevelInt;
             ReturnCode status = SpssThinWrapper.spssGetVarMeasureLevelImpl(handle, ref varName, out measureLevelInt);
@@ -659,7 +660,7 @@ namespace Spss
         /// values present. (The macros SPSS_NO_MISSVAL, SPSS_ONE_MISSVAL,
         /// SPSS_TWO_MISSVAL, and SPSS_THREE_MISSVAL may be used as synonyms for 0–3.)
         /// </remarks>
-        public static ReturnCode spssGetVarNMissingValues(int handle, string varName, out MissingValueFormatCode missingFormat, out double missingVal1, out double missingVal2, out double missingVal3)
+        public ReturnCode spssGetVarNMissingValues(int handle, string varName, out MissingValueFormatCode missingFormat, out double missingVal1, out double missingVal2, out double missingVal3)
         {
             return SpssThinWrapper.spssGetVarNMissingValuesImpl(handle, ref varName, out missingFormat, out missingVal1, out missingVal2, out missingVal3);
         }
@@ -692,7 +693,7 @@ namespace Spss
         /// <remarks>
         /// This function gets the value label for a given value of a short string variable. 
         /// </remarks>
-        public static ReturnCode spssGetVarCValueLabel(int handle, string varName, string value, out string label)
+        public ReturnCode spssGetVarCValueLabel(int handle, string varName, string value, out string label)
         {
             int len;
             label = new string(' ', SPSS_MAX_VALLABEL + 1);
@@ -727,7 +728,7 @@ namespace Spss
         /// <remarks>
         /// This function gets the value label for a given value of a numeric variable. 
         /// </remarks>
-        public static ReturnCode spssGetVarNValueLabel(int handle, string varName, double value, out string label)
+        public ReturnCode spssGetVarNValueLabel(int handle, string varName, double value, out string label)
         {
             int len;
             label = new string(' ', SPSS_MAX_VALLABEL + 1); // leave room for null terminator
@@ -770,7 +771,7 @@ namespace Spss
         /// places, and field width are returned as <paramref>printType</paramref>, 
         /// <paramref>printDec</paramref>, and <paramref>printWid</paramref>, respectively.
         /// </remarks>
-        public static ReturnCode spssGetVarPrintFormat(int handle, string varName, out FormatTypeCode printType, out int printDec, out int printWidth)
+        public ReturnCode spssGetVarPrintFormat(int handle, string varName, out FormatTypeCode printType, out int printDec, out int printWidth)
         {
             return SpssThinWrapper.spssGetVarPrintFormatImpl(handle, ref varName, out printType, out printDec, out printWidth);
         }
@@ -804,7 +805,7 @@ namespace Spss
         /// places, and field width are returned as writeType, writeDec, and writeWid,
         /// respectively.
         /// </remarks>
-        public static ReturnCode spssGetVarWriteFormat(int handle, string varName, out FormatTypeCode writeType, out int writeDec, out int writeWidth)
+        public ReturnCode spssGetVarWriteFormat(int handle, string varName, out FormatTypeCode writeType, out int writeDec, out int writeWidth)
         {
             return SpssThinWrapper.spssGetVarWriteFormatImpl(handle, ref varName, out writeType, out writeDec, out writeWidth);
         }
@@ -832,7 +833,7 @@ namespace Spss
         /// This function opens an SPSS data file for appending cases and returns a handle that
         /// should be used for subsequent operations on the file.
         /// </remarks>
-        public static ReturnCode spssOpenAppend(string fileName, out int handle)
+        public ReturnCode spssOpenAppend(string fileName, out int handle)
         {
             return SpssThinWrapper.spssOpenAppendImpl(ref fileName, out handle);
         }
@@ -866,7 +867,7 @@ namespace Spss
         /// new file initialized with a copy of the old file’s dictionary, then <see cref="spssOpenRead"/> (oldFile-
         /// Name, ...) to open the old file to access its data.
         /// </remarks>
-        public static ReturnCode spssOpenWriteCopy(string fileName, string dictFileName, out int handle)
+        public ReturnCode spssOpenWriteCopy(string fileName, string dictFileName, out int handle)
         {
             return SpssThinWrapper.spssOpenWriteCopyImpl(ref fileName, ref dictFileName, out handle);
         }
@@ -893,7 +894,7 @@ namespace Spss
         /// This function defines variable varName as the case weight variable for the data file
         /// specified by the handle.
         /// </remarks>
-        public static ReturnCode spssSetCaseWeightVar(int handle, string varName)
+        public ReturnCode spssSetCaseWeightVar(int handle, string varName)
         {
             return SpssThinWrapper.spssSetCaseWeightVarImpl(handle, ref varName);
         }
@@ -922,7 +923,7 @@ namespace Spss
         /// is done on the input array, this function should be used with caution and is
         /// recommended only for copying Trends information from one file to another.
         /// </remarks>
-        unsafe public static ReturnCode spssSetDateVariables(int handle, int[] dateInfo)
+        unsafe public ReturnCode spssSetDateVariables(int handle, int[] dateInfo)
         {
             return SpssThinWrapper.spssSetDateVariablesImpl(handle, dateInfo.Length, (int*)Marshal.UnsafeAddrOfPinnedArrayElement(dateInfo, 0));
         }
@@ -951,7 +952,7 @@ namespace Spss
         /// subsequent segments are delivered by calling spssSetDEWNext as many times as
         /// necessary.
         /// </remarks>
-        public static ReturnCode spssSetDEWFirst(int handle, string data)
+        public ReturnCode spssSetDEWFirst(int handle, string data)
         {
             return SpssThinWrapper.spssSetDEWFirstImpl(handle, ref data, data.Length);
         }
@@ -975,7 +976,7 @@ namespace Spss
         /// This function stores the Data Entry for Windows uniqueness indicator on the data file.
         /// It should only be used by the DEW product.
         /// </remarks>
-        public static ReturnCode spssSetDEWGUID(int handle, string asciiGUID)
+        public ReturnCode spssSetDEWGUID(int handle, string asciiGUID)
         {
             return SpssThinWrapper.spssSetDEWGUIDImpl(handle, ref asciiGUID);
         }
@@ -1004,7 +1005,7 @@ namespace Spss
         /// subsequent segments are delivered by calling spssSetDEWNext as many times as
         /// necessary.
         /// </remarks>
-        public static ReturnCode spssSetDEWNext(int handle, string data)
+        public ReturnCode spssSetDEWNext(int handle, string data)
         {
             return SpssThinWrapper.spssSetDEWNextImpl(handle, ref data, data.Length);
         }
@@ -1029,7 +1030,7 @@ namespace Spss
         /// This function sets the file label of the output SPSS data file associated with handle to
         /// the given string id.
         /// </remarks>
-        public static ReturnCode spssSetIdString(int handle, string id)
+        public ReturnCode spssSetIdString(int handle, string id)
         {
             return SpssThinWrapper.spssSetIdStringImpl(handle, ref id);
         }
@@ -1056,7 +1057,7 @@ namespace Spss
         /// consist of a single null-terminated ASCII string which is similar to that containing the
         /// variable set definitions.
         /// </remarks>
-        public static ReturnCode spssSetMultRespDefs(int handle, string mrespDefs)
+        public ReturnCode spssSetMultRespDefs(int handle, string mrespDefs)
         {
             return SpssThinWrapper.spssSetMultRespDefsImpl(handle, ref mrespDefs);
         }
@@ -1082,7 +1083,7 @@ namespace Spss
         /// longer than 255 characters, only the first 255 are (quietly) used. If textInfo contains the
         /// empty string, existing text data, if any, is deleted.
         /// </remarks>
-        public static ReturnCode spssSetTextInfo(int handle, string textInfo)
+        public ReturnCode spssSetTextInfo(int handle, string textInfo)
         {
             return SpssThinWrapper.spssSetTextInfoImpl(handle, ref textInfo);
         }
@@ -1113,7 +1114,7 @@ namespace Spss
         /// This function sets the value of a string variable for the current case. The current case is
         /// not written out to the data file until <see cref="SpssThinWrapper.spssCommitCaseRecordDelegate"/> is called.
         /// </remarks>
-        public static ReturnCode spssSetValueChar(int handle, double varHandle, string value)
+        public ReturnCode spssSetValueChar(int handle, double varHandle, string value)
         {
             return SpssThinWrapper.spssSetValueCharImpl(handle, varHandle, ref value);
         }
@@ -1141,7 +1142,7 @@ namespace Spss
         /// <remarks>
         /// This function sets the value of the alignment attribute of a variable.
         /// </remarks>
-        public static ReturnCode spssSetVarAlignment(int handle, string varName, AlignmentCode alignment)
+        public ReturnCode spssSetVarAlignment(int handle, string varName, AlignmentCode alignment)
         {
             return SpssThinWrapper.spssSetVarAlignmentImpl(handle, ref varName, alignment);
         }
@@ -1189,7 +1190,7 @@ namespace Spss
         /// made up of blanks, which are ignored. If the missing value is shorter than the length of
         /// the variable, trailing blanks are assumed.
         /// </remarks>
-        public static ReturnCode spssSetVarCMissingValues(int handle, string varName, MissingValueFormatCode missingFormat, string missingVal1, string missingVal2, string missingVal3)
+        public ReturnCode spssSetVarCMissingValues(int handle, string varName, MissingValueFormatCode missingFormat, string missingVal1, string missingVal2, string missingVal3)
         {
             return SpssThinWrapper.spssSetVarCMissingValuesImpl(handle, ref varName, missingFormat,
                 ref missingVal1, ref missingVal2, ref missingVal3);
@@ -1219,7 +1220,7 @@ namespace Spss
         /// is special and means that the SPSS Data Editor, which is the primary user of this
         /// attribute, is to set an appropriate width using its own algorithm.
         /// </remarks>
-        public static ReturnCode spssSetVarColumnWidth(int handle, string varName, int columnWidth)
+        public ReturnCode spssSetVarColumnWidth(int handle, string varName, int columnWidth)
         {
             return SpssThinWrapper.spssSetVarColumnWidthImpl(handle, ref varName, columnWidth);
         }
@@ -1250,9 +1251,9 @@ namespace Spss
         /// <remarks>
         /// This function sets the label of a variable.
         /// </remarks>
-        public static ReturnCode spssSetVarLabel(int handle, string varName, string varLabel)
+        public ReturnCode spssSetVarLabel(int handle, string varName, string varLabel)
         {
-            using (var lbl = EncodedString.Encode(varLabel))
+            using (var lbl = EncodedString.Encode(varLabel, this.Encoding))
             {
                 return SpssThinWrapper.spssSetVarLabelImpl(handle, ref varName, lbl);
             }
@@ -1318,7 +1319,7 @@ namespace Spss
         /// For better readability, macros SPSS_NUMERIC and SPSS_STRING( length) may be
         /// used as values for varLength.
         /// </remarks>
-        public static ReturnCode spssSetVarName(int handle, string varName, int varType)
+        public ReturnCode spssSetVarName(int handle, string varName, int varType)
         {
             return SpssThinWrapper.spssSetVarNameImpl(handle, ref varName, varType);
         }
@@ -1356,7 +1357,7 @@ namespace Spss
         /// This function changes or adds a value label for the specified value of a short string
         /// variable. The label should not exceed 60 characters in length.
         /// </remarks>
-        public static ReturnCode spssSetVarCValueLabel(int handle, string varName, string value, string label)
+        public ReturnCode spssSetVarCValueLabel(int handle, string varName, string value, string label)
         {
             return SpssThinWrapper.spssSetVarCValueLabelImpl(handle, ref varName, ref value, ref label);
         }
@@ -1383,7 +1384,7 @@ namespace Spss
         /// on the supplied string beyond ensuring that its length is not 0. Any existing variable
         /// sets information is discarded.
         /// </remarks>
-        public static ReturnCode spssSetVariableSets(int handle, string varSets)
+        public ReturnCode spssSetVariableSets(int handle, string varSets)
         {
             return SpssThinWrapper.spssSetVariableSetsImpl(handle, ref varSets);
         }
@@ -1411,7 +1412,7 @@ namespace Spss
         /// <remarks>
         /// This function sets the value of the measurement level attribute of a variable.
         /// </remarks>
-        public static ReturnCode spssSetVarMeasureLevel(int handle, string varName, MeasurementLevelCode measureLevel)
+        public ReturnCode spssSetVarMeasureLevel(int handle, string varName, MeasurementLevelCode measureLevel)
         {
             return SpssThinWrapper.spssSetVarMeasureLevelImpl(handle, ref varName, (int)measureLevel);
         }
@@ -1461,7 +1462,7 @@ namespace Spss
         /// SPSS_ONE_MISSVAL, SPSS_TWO_MISSVAL, and SPSS_THREE_MISSVAL may be
         /// used as synonyms for 0–3.)
         /// </remarks>
-        public static ReturnCode spssSetVarNMissingValues(int handle, string varName, MissingValueFormatCode missingFormat, double missingVal1, double missingVal2, double missingVal3)
+        public ReturnCode spssSetVarNMissingValues(int handle, string varName, MissingValueFormatCode missingFormat, double missingVal1, double missingVal2, double missingVal3)
         {
             return SpssThinWrapper.spssSetVarNMissingValuesImpl(handle, ref varName, missingFormat,
                 missingVal1, missingVal2, missingVal3);
@@ -1497,7 +1498,7 @@ namespace Spss
         /// This function changes or adds a value label for the specified value of a numeric
         /// variable. The label should not exceed 60 characters in length.
         /// </remarks>
-        public static ReturnCode spssSetVarNValueLabel(int handle, string varName, double value, string label)
+        public ReturnCode spssSetVarNValueLabel(int handle, string varName, double value, string label)
         {
             return SpssThinWrapper.spssSetVarNValueLabelImpl(handle, ref varName, value, ref label);
         }
@@ -1535,7 +1536,7 @@ namespace Spss
         /// <remarks>
         /// This function sets the print format of a variable.
         /// </remarks>
-        public static ReturnCode spssSetVarPrintFormat(int handle, string varName, FormatTypeCode printType, int printDec, int printWidth)
+        public ReturnCode spssSetVarPrintFormat(int handle, string varName, FormatTypeCode printType, int printDec, int printWidth)
         {
             return SpssThinWrapper.spssSetVarPrintFormatImpl(handle, ref varName, printType, printDec, printWidth);
         }
@@ -1572,7 +1573,7 @@ namespace Spss
         /// <remarks>
         /// This function sets the write format of a variable.
         /// </remarks>
-        public static ReturnCode spssSetVarWriteFormat(int handle, string varName, FormatTypeCode writeType, int writeDec, int writeWidth)
+        public ReturnCode spssSetVarWriteFormat(int handle, string varName, FormatTypeCode writeType, int writeDec, int writeWidth)
         {
             return SpssThinWrapper.spssSetVarWriteFormatImpl(handle, ref varName, writeType, writeDec, writeWidth);
         }
@@ -1598,7 +1599,7 @@ namespace Spss
         /// low-level function whose use should not be mixed with calls to <see cref="SpssThinWrapper.spssReadCaseRecordDelegate"/>
         /// using the same file handle because both procedures read a new case from the data file.
         /// </remarks>
-        public static ReturnCode spssWholeCaseIn(int handle, out string caseRec)
+        public ReturnCode spssWholeCaseIn(int handle, out string caseRec)
         {
             // Fetch the size of each case to set an appropriately sized buffer
             int caseSize;
@@ -1635,7 +1636,7 @@ namespace Spss
         /// to <see cref="SpssThinWrapper.spssCommitCaseRecordDelegate"/> using the same file handle 
         /// because both procedures write a new case to the data file.
         /// </remarks>
-        public static ReturnCode spssWholeCaseOut(int handle, string caseRec)
+        public ReturnCode spssWholeCaseOut(int handle, string caseRec)
         {
             return SpssThinWrapper.spssWholeCaseOutImpl(handle, ref caseRec);
         }
@@ -1658,7 +1659,7 @@ namespace Spss
         /// <remarks>
         /// This function reports the variable sets information in the data file. 
         /// </remarks>
-        unsafe public static ReturnCode spssGetVariableSets(int handle, out string varSets)
+        unsafe public ReturnCode spssGetVariableSets(int handle, out string varSets)
         {
             char* cVarSets;
             ReturnCode result = SpssThinWrapper.spssGetVariableSetsImpl(handle, out cVarSets);
@@ -1701,7 +1702,7 @@ namespace Spss
         /// comprise the "fixed" information, followed by a sequence of one or more three-element
         /// groups.
         /// </remarks>
-        unsafe public static ReturnCode spssGetDateVariables(int handle, int[] dateInfo)
+        unsafe public ReturnCode spssGetDateVariables(int handle, int[] dateInfo)
         {
             int* cDateInfo;
             int numofElements;
@@ -1746,7 +1747,7 @@ namespace Spss
         /// *mrespDefs is set to NULL, and the function returns the warning code
         /// <see cref="ReturnCode.SPSS_NO_MULTRESP"/>.
         /// </remarks>
-        unsafe public static ReturnCode spssGetMultRespDefs(int handle, out string mrespDefs)
+        unsafe public ReturnCode spssGetMultRespDefs(int handle, out string mrespDefs)
         {
             char* cMrespDefs;
             ReturnCode result = SpssThinWrapper.spssGetMultRespDefsImpl(handle, out cMrespDefs);
@@ -1799,7 +1800,7 @@ namespace Spss
         /// The two arrays and the label strings are allocated on the heap. When they are no longer
         /// needed, <see cref="SpssThinWrapper.spssFreeVarNValueLabelsDelegate"/> should be called to free the memory.
         /// </remarks>
-        unsafe public static ReturnCode spssGetVarNValueLabels(int handle, string varName, out double[] values, out string[] labels)
+        unsafe public ReturnCode spssGetVarNValueLabels(int handle, string varName, out double[] values, out string[] labels)
         {
             double* cValues;
             char** cLabels;
@@ -1861,7 +1862,7 @@ namespace Spss
         /// The two arrays and the value and label strings are allocated on the heap. When they
         /// are no longer needed, <see cref="SpssThinWrapper.spssFreeVarCValueLabelsDelegate"/> should be called to free the memory.
         /// </remarks>
-        unsafe public static ReturnCode spssGetVarCValueLabels(int handle, string varName, out string[] values, out string[] labels)
+        unsafe public ReturnCode spssGetVarCValueLabels(int handle, string varName, out string[] values, out string[] labels)
         {
             char** cValues;
             char** cLabels;
@@ -1911,7 +1912,7 @@ namespace Spss
         /// The type code is an integer in the range 0-255, 0 indicating a numeric
         /// variable and a positive value indicating a string variable of that size.
         /// </remarks>
-        unsafe public static ReturnCode spssGetVarNames(int handle, out string[] varNames, out int[] varTypes)
+        unsafe public ReturnCode spssGetVarNames(int handle, out string[] varNames, out int[] varTypes)
         {
             int numVars;
             char** cVarNames;
@@ -1936,57 +1937,36 @@ namespace Spss
             return result;
         }
 
-
-        #region Obsolete, exception throwing wrappers for SPSS functions
-        [Obsolete("Use spssSetVarWriteFormat instead.")]
-        public static void SetVarWriteFormat(int handle, string varName, FormatTypeCode writeType, int writeDec, int writeWidth)
+        public ReturnCode spssCommitHeader(int handle)
         {
-            SpssException.ThrowOnFailure(spssSetVarWriteFormat(handle, varName, writeType, writeDec, writeWidth), "spssSetVarWriteFormat");
-        }
-        [Obsolete("Use spssSetVarPrintFormat instead.")]
-        public static void SetVarPrintFormat(int handle, string varName, FormatTypeCode printType, int printDec, int printWidth)
-        {
-            SpssException.ThrowOnFailure(spssSetVarPrintFormat(handle, varName, printType, printDec, printWidth), "spssSetVarPrintFormat");
-        }
-        [Obsolete("Use spssSetVarName instead.")]
-        public static void SetVarName(int handle, string varName, int varType)
-        {
-            SpssException.ThrowOnFailure(spssSetVarName(handle, varName, varType), "spssSetVarName");
-        }
-        [Obsolete("Use spssSetVarLabel instead.")]
-        public static void SetVarLabel(int handle, string varName, string varLabel)
-        {
-            SpssException.ThrowOnFailure(spssSetVarLabel(handle, varName, varLabel), "spssSetVarLabel");
-        }
-        [Obsolete("Use spssSetVarNValueLabel instead.")]
-        public static void SetVarNValueLabel(int handle, string varName, double value, string label)
-        {
-            SpssException.ThrowOnFailure(spssSetVarNValueLabel(handle, varName, value, label), "spssSetVarNValueLabel");
+            return SpssThinWrapper.spssCommitHeaderImpl(handle);
         }
 
-        [Obsolete("Use spssGetVarLabel instead.")]
-        public static string GetVarLabel(int handle, string varName)
+        public ReturnCode spssCloseWrite(int handle)
         {
-            string varLabel;
-            SpssException.ThrowOnFailure(spssGetVarLabel(handle, varName, out varLabel), "spssGetVarLabel");
-            return varLabel;
+            return SpssThinWrapper.spssCloseWriteImpl(handle);
         }
 
-        [Obsolete("Use spssGetVarNValueLabel instead.")]
-        public static string GetVarNValueLabel(int handle, string varName, double value)
+        public string SpssSetLocale(int category, string locale)
         {
-            string label;
-            SpssException.ThrowOnFailure(spssGetVarNValueLabel(handle, varName, value, out label), "spssGetVarNValueLabel");
-            return label;
+            return Marshal.PtrToStringAnsi(SpssThinWrapper.spssSetLocaleImpl(category, locale));
         }
 
-        [Obsolete("Use spssGetValueChar instead.")]
-        public static string GetValueChar(int handle, double varHandle)
+        /// <summary>
+        /// This function returns the current interface encoding. 
+        /// </summary>
+        public InterfaceEncoding SpssGetInterfaceEncoding()
         {
-            string value;
-            SpssException.ThrowOnFailure(spssGetValueChar(handle, varHandle, out value), "spssGetValueChar");
-            return value;
+            return SpssThinWrapper.spssGetInterfaceEncodingImpl();
         }
-        #endregion
+
+        /// <summary>
+        /// Sets the encoding. There can be NO open files when you call this.
+        /// </summary>
+        /// <returns>Returns SPSS_FILES_OPEN when any files are open that prevent encoding from being set. Returns OK when encoding was set.</returns>
+        public ReturnCode SpssSetInterfaceEncoding(InterfaceEncoding value)
+        {
+            return SpssThinWrapper.spssSetInterfaceEncodingImpl(value);
+        }
     }
 }
