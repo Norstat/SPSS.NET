@@ -1,5 +1,8 @@
 using System;
+using System;
 using System.Runtime.InteropServices;
+using System.Text;
+// ReSharper disable InconsistentNaming
 
 namespace Spss
 {
@@ -1223,6 +1226,7 @@ namespace Spss
         {
             return SpssThinWrapper.spssSetVarColumnWidthImpl(handle, ref varName, columnWidth);
         }
+
         /// <summary>
         /// Sets the label of a variable.
         /// </summary>
@@ -1253,6 +1257,42 @@ namespace Spss
         public static ReturnCode spssSetVarLabel(int handle, string varName, string varLabel)
         {
             using (var lbl = EncodedString.Encode(varLabel))
+            {
+                return SpssThinWrapper.spssSetVarLabelImpl(handle, ref varName, lbl);
+            }
+        }
+
+        /// <summary>
+        /// Sets the label of a variable.
+        /// </summary>
+        /// <param name="handle">
+        /// Handle to the data file.
+        /// </param>
+        /// <param name="varName">
+        /// Variable name.
+        /// </param>
+        /// <param name="varLabel">
+        /// Variable label. The length of the string should not exceed 
+        /// <see cref="SpssThinWrapper.SPSS_MAX_VARLABEL"/> characters.
+        /// If varLabel is the empty string, the existing label, if any, is deleted.
+        /// </param>
+        /// <param name="encoding">encoding</param>
+        /// <returns>
+        /// <see cref="ReturnCode.SPSS_OK"/>,
+        /// <see cref="ReturnCode.SPSS_EXC_LEN120"/>,
+        /// <see cref="ReturnCode.SPSS_INVALID_HANDLE"/>,
+        /// <see cref="ReturnCode.SPSS_OPEN_RDMODE"/>,
+        /// <see cref="ReturnCode.SPSS_DICT_COMMIT"/>,
+        /// <see cref="ReturnCode.SPSS_INVALID_VARNAME"/>,
+        /// <see cref="ReturnCode.SPSS_VAR_NOTFOUND"/>, or
+        /// <see cref="ReturnCode.SPSS_NO_MEMORY"/>.
+        /// </returns>
+        /// <remarks>
+        /// This function sets the label of a variable.
+        /// </remarks>
+        public static ReturnCode spssSetVarLabel(int handle, string varName, string varLabel, Encoding encoding)
+        {
+            using (var lbl = EncodedString.Encode(varLabel, encoding))
             {
                 return SpssThinWrapper.spssSetVarLabelImpl(handle, ref varName, lbl);
             }
@@ -1934,6 +1974,17 @@ namespace Spss
                 spssFreeVarNamesImpl(cVarNames, cVarTypes, numVars);
             }
             return result;
+        }
+
+        /// <summary>
+        /// Sets locale
+        /// </summary>
+        /// <param name="category"></param>
+        /// <param name="locale">SPSS locale format, e.g. "Polish"</param>
+        /// <returns>SPSS locale if success, null if not</returns>
+        public static string spssSetLocale(int category, string locale)
+        {
+            return Marshal.PtrToStringAnsi(SpssThinWrapper.spssSetLocaleImpl(category, locale));
         }
 
 

@@ -56,26 +56,26 @@ namespace Spss.Testing
             var handle = 0;
             if (File.Exists(filename)) File.Delete(filename);
 
-            var wrapper = new SpssWrapper(encoding);
             try
             {
                 if (savLocale != null)
                 {
-                    Debug.WriteLine(wrapper.SpssSetLocale(0, savLocale));
+                    var result = SpssSafeWrapper.spssSetLocale(0, savLocale);
+                    Debug.WriteLine(result);
                 }
-                wrapper.spssOpenWrite(filename, out handle);
+                SpssSafeWrapper.spssOpenWrite(filename, out handle);
                 var index = 1;
                 foreach (var lbl in getLabels())
                 {
                     var name = "Q" + index++;
-                    wrapper.spssSetVarName(handle, name, 0);
-                    wrapper.spssSetVarLabel(handle, name, lbl);
+                    SpssSafeWrapper.spssSetVarName(handle, name, 0);
+                    SpssSafeWrapper.spssSetVarLabel(handle, name, lbl);
                 }
-                wrapper.spssCommitHeader(handle);
+                SpssThinWrapper.spssCommitHeaderImpl(handle);
             }
             finally
             {
-                wrapper.spssCloseWrite(handle);
+                SpssThinWrapper.spssCloseWriteImpl(handle);
             }
         }
     }

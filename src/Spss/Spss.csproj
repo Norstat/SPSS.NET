@@ -208,7 +208,6 @@
     <Compile Include="SpssNumericVariableValueLabels.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SpssWrapper.cs" />
     <Compile Include="SpssSafeWrapper.cs">
       <SubType>Code</SubType>
     </Compile>

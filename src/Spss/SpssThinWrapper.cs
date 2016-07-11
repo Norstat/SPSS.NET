@@ -3289,7 +3289,7 @@ namespace Spss
         /// the I/O Module's locale.  The parameters and return value are identical to those for the C run-time function setlocal
         /// </summary>
         /// <remarks>
-        /// See also spssGetFileEncoding 
+        /// See also spssGetFileEncoding (not implemented)
         /// </remarks>
         /// <param name="category">A locale category, for example LC_ALL or LC_CTYPE.  These are defined in the header file locale.h. </param>
         /// <param name="locale">A locale, for example "Japanese.932".</param>
@@ -3306,6 +3306,8 @@ namespace Spss
 
         /// <summary>
         /// This function sets the current interface encoding. 
+        /// It is imperative that this function is called before any other spss function. 
+        /// There cannot be any open spss files when calling this function.
         /// </summary>
         public delegate ReturnCode SpssSetInterfaceEncodingDelegate(InterfaceEncoding value);
         public static SpssSetInterfaceEncodingDelegate spssSetInterfaceEncodingImpl;
