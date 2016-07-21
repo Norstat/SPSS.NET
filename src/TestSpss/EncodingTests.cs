@@ -38,14 +38,15 @@ namespace Spss.Testing
         public void CreateADanishFile()
         {
             SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_CODEPAGE);
-            WriteLabelsFile(@"SAVs\generated-da.sav", "Danish", Encoding.GetEncoding(1252), () => labels1252);
+            WriteLabelsFile(@"SAVs\generated-da.sav", "Polish", Encoding.GetEncoding(1252), () => labels1252);
         }
 
         [Fact]
         public void CreateAUtf8File()
         {
             SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_UTF8);
-            WriteLabelsFile(@"SAVs\generated-utf8.sav", "Danish", Encoding.UTF8, () => labels1252.Union(labels1250));
+            foreach (var locale in new[] { /*"Norwegian", "Danish", "Greek", "Turkish", "Hebrew", "Arabic", "Vietnamese", "Russian", */ "Latvian" })
+            WriteLabelsFile(@"SAVs\generated-utf8.sav", locale, Encoding.UTF8, () => labels1252.Union(labels1250));
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace Spss.Testing
                 if (savLocale != null)
                 {
                     var result = SpssSafeWrapper.spssSetLocale(0, savLocale);
-                    Debug.WriteLine(result);
+                    Debug.WriteLine(savLocale + " => " + result);
                 }
                 SpssSafeWrapper.spssOpenWrite(filename, out handle);
                 var index = 1;

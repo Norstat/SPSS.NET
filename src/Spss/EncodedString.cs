@@ -29,14 +29,6 @@ namespace Spss
         public override bool IsInvalid { get; } = false; // all handle values are valid?
 
         /// <summary>
-        /// Encode using Encoding.Default
-        /// </summary>
-        public static EncodedString Encode(string str)
-        {
-            return Encode(str, Encoding.Default);
-        }
-
-        /// <summary>
         /// Encode using custom encoding
         /// </summary>
         public static EncodedString Encode(string str, Encoding encoding)

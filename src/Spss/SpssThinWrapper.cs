@@ -2743,7 +2743,7 @@ namespace Spss
         /// This function sets the value of a string variable for the current case. The current case is
         /// not written out to the data file until <see cref="spssCommitCaseRecordDelegate"/> is called.
         /// </remarks>
-        protected delegate ReturnCode spssSetValueCharDelegate(int handle, double varHandle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value);
+        protected delegate ReturnCode spssSetValueCharDelegate(int handle, double varHandle, [In] IntPtr value);
         protected static spssSetValueCharDelegate spssSetValueCharImpl;
         /// <summary>
         /// Sets the value of a numeric variable.
@@ -3145,7 +3145,7 @@ namespace Spss
         /// variable. The label should be a null-terminated string not exceeding 60 characters in
         /// length.
         /// </remarks>
-        protected delegate ReturnCode spssSetVarNValueLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, double value, [MarshalAs(UnmanagedType.VBByRefStr)] ref string label);
+        protected delegate ReturnCode spssSetVarNValueLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, double value, [In] IntPtr label);
         protected static spssSetVarNValueLabelDelegate spssSetVarNValueLabelImpl;
 
         /// <summary>

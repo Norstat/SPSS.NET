@@ -1118,8 +1118,44 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssSetValueChar(int handle, double varHandle, string value)
         {
-            return SpssThinWrapper.spssSetValueCharImpl(handle, varHandle, ref value);
+            return spssSetValueChar(handle, varHandle, value, Encoding.Default);
         }
+
+        /// <summary>
+        /// Sets the value of a string variable.
+        /// </summary>
+        /// <param name="handle">
+        /// Handle to the data file.
+        /// </param>
+        /// <param name="varHandle">
+        /// Handle to the variable.
+        /// </param>
+        /// <param name="value">
+        /// Value of the variable. The length of the
+        /// string (ignoring trailing blanks, if any) should be less than or equal
+        /// to the length of the variable.
+        /// </param>
+        /// <param name="encoding">Encoding</param>
+        /// <returns>
+        /// <see cref="ReturnCode.SPSS_OK"/>,
+        /// <see cref="ReturnCode.SPSS_INVALID_HANDLE"/>,
+        /// <see cref="ReturnCode.SPSS_OPEN_RDMODE"/>,
+        /// <see cref="ReturnCode.SPSS_DICT_NOTCOMMIT"/>,
+        /// <see cref="ReturnCode.SPSS_STR_EXP"/>, or
+        /// <see cref="ReturnCode.SPSS_EXC_STRVALUE"/>.
+        /// </returns>
+        /// <remarks>
+        /// This function sets the value of a string variable for the current case. The current case is
+        /// not written out to the data file until <see cref="SpssThinWrapper.spssCommitCaseRecordDelegate"/> is called.
+        /// </remarks>
+        public static ReturnCode spssSetValueChar(int handle, double varHandle, string value, Encoding encoding)
+        {
+            using (var txt = EncodedString.Encode(value, encoding))
+            {
+                return SpssThinWrapper.spssSetValueCharImpl(handle, varHandle, txt);
+            }
+        }
+
         /// <summary>
         /// Sets the alignment of a variable.
         /// </summary>
@@ -1256,10 +1292,7 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssSetVarLabel(int handle, string varName, string varLabel)
         {
-            using (var lbl = EncodedString.Encode(varLabel))
-            {
-                return SpssThinWrapper.spssSetVarLabelImpl(handle, ref varName, lbl);
-            }
+            return spssSetVarLabel(handle, varName, varLabel, Encoding.Default);
         }
 
         /// <summary>
@@ -1539,7 +1572,47 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssSetVarNValueLabel(int handle, string varName, double value, string label)
         {
-            return SpssThinWrapper.spssSetVarNValueLabelImpl(handle, ref varName, value, ref label);
+            return spssSetVarNValueLabel(handle, varName, value, label, Encoding.Default);
+        }
+
+        /// <summary>
+        /// Changes or adds a value label to a numeric variable.
+        /// </summary>
+        /// <param name="handle">
+        /// Handle to the data file.
+        /// </param>
+        /// <param name="varName">
+        /// Variable name.
+        /// </param>
+        /// <param name="value">
+        /// Value to be labeled.
+        /// </param>
+        /// <param name="label">
+        /// Label.
+        /// </param>
+        /// <param name="encoding">Encoding</param>
+        /// <returns>
+        /// <see cref="ReturnCode.SPSS_OK"/>,
+        /// <see cref="ReturnCode.SPSS_EXC_LEN60"/>,
+        /// <see cref="ReturnCode.SPSS_INVALID_HANDLE"/>,
+        /// <see cref="ReturnCode.SPSS_OPEN_RDMODE"/>,
+        /// <see cref="ReturnCode.SPSS_DICT_COMMIT"/>,
+        /// <see cref="ReturnCode.SPSS_INVALID_VARNAME"/>,
+        /// <see cref="ReturnCode.SPSS_VAR_NOTFOUND"/>,
+        /// <see cref="ReturnCode.SPSS_NUME_EXP"/>,
+        /// <see cref="ReturnCode.SPSS_NO_MEMORY"/>, or
+        /// <see cref="ReturnCode.SPSS_INTERNAL_VLABS"/>.
+        /// </returns>
+        /// <remarks>
+        /// This function changes or adds a value label for the specified value of a numeric
+        /// variable. The label should not exceed 60 characters in length.
+        /// </remarks>
+        public static ReturnCode spssSetVarNValueLabel(int handle, string varName, double value, string label, Encoding encoding)
+        {
+            using (var lbl = EncodedString.Encode(label, encoding))
+            {
+                return SpssThinWrapper.spssSetVarNValueLabelImpl(handle, ref varName, value, lbl);
+            }
         }
 
         /// <summary>
