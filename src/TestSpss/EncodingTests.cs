@@ -11,9 +11,6 @@ namespace Spss.Testing
 {
     public class EncodingTests
     {
-        // working savLocale formats: Polish_Poland.1250, Polish (case sensitive?)
-        // todo: make a lookup table so DPT can convert 'windows-1250' to 'Polish'
-
         private string[] labels1250 = new[]
         {
             "Czy planują Państwo w najbliższym czasie wykorzystywanie w procesach produkcyjnych innych, nowych modyfikatów, które nie zostały jeszcze wymienione?",
@@ -38,15 +35,38 @@ namespace Spss.Testing
         public void CreateADanishFile()
         {
             SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_CODEPAGE);
-            WriteLabelsFile(@"SAVs\generated-da.sav", "Polish", Encoding.GetEncoding(1252), () => labels1252);
+            WriteLabelsFile(@"SAVs\generated-da.sav", "Danish", Encoding.GetEncoding(1252), () => labels1252);
         }
 
         [Fact]
         public void CreateAUtf8File()
         {
+            // just testing...
             SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_UTF8);
             foreach (var locale in new[] { /*"Norwegian", "Danish", "Greek", "Turkish", "Hebrew", "Arabic", "Vietnamese", "Russian", */ "Latvian" })
             WriteLabelsFile(@"SAVs\generated-utf8.sav", locale, Encoding.UTF8, () => labels1252.Union(labels1250));
+        }
+
+        [Fact]
+        public void ReadDanishFile()
+        {
+            SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_CODEPAGE);
+            SpssSafeWrapper.spssSetLocale(0, "Danish");
+            int handle = -1;
+            string label;
+            try
+            {
+                SpssSafeWrapper.spssOpenRead(@"SAVs\da.sav", out handle);
+                SpssSafeWrapper.spssGetVarLabel(handle, "q1", out label);
+                Assert.Equal("the quick brown fox...", label);
+
+                SpssSafeWrapper.spssGetVarLabel(handle, "q2", out label);
+                Assert.Equal("æøå (DA characters)", label);
+            }
+            finally
+            {
+                SpssSafeWrapper.spssCloseRead(handle);
+            }
         }
 
         /// <summary>
@@ -70,7 +90,7 @@ namespace Spss.Testing
                 {
                     var name = "Q" + index++;
                     SpssSafeWrapper.spssSetVarName(handle, name, 0);
-                    SpssSafeWrapper.spssSetVarLabel(handle, name, lbl);
+                    SpssSafeWrapper.spssSetVarLabel(handle, name, lbl, encoding);
                 }
                 SpssThinWrapper.spssCommitHeaderImpl(handle);
             }

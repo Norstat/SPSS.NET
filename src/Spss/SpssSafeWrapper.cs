@@ -2053,7 +2053,7 @@ namespace Spss
         /// Sets locale
         /// </summary>
         /// <param name="category"></param>
-        /// <param name="locale">SPSS locale format, e.g. "Polish"</param>
+        /// <param name="locale">SPSS locale format, e.g. "Polish" or "Polish_Poland.1250"</param>
         /// <returns>SPSS locale if success, null if not</returns>
         public static string spssSetLocale(int category, string locale)
         {
