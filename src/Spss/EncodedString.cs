@@ -13,6 +13,8 @@ namespace Spss
         {
         }
 
+        public string Value { get; private set; }
+
         protected override bool ReleaseHandle()
         {
             try
@@ -56,9 +58,34 @@ namespace Spss
             return new EncodedString(ptr);
         }
 
+        public static EncodedString Decode(int length = SpssThinWrapper.SPSS_MAX_VERYLONGSTRING)
+        {
+            var ptr = Marshal.AllocHGlobal(length);
+            return new EncodedString(ptr);
+        }
+
         public static implicit operator IntPtr(EncodedString str)
         {
             return str.handle;
+        }
+
+        public string ToString(Encoding encoding, int length)
+        {
+            if (length == 0) return null;
+
+            var bytes = new byte[length];
+            Marshal.Copy(this.handle, bytes, 0, length);
+            // in case the array is null terminated (not all methods return byte length)
+            var zeroIndex = Array.FindIndex(bytes, b => b == 0); 
+            return zeroIndex >= 0 ? encoding.GetString(bytes, 0, zeroIndex).Trim() : encoding.GetString(bytes);
+
+            // NB: this doesn't work. We need the raw bytes to handle encoding, as above
+            //Marshal.PtrToStringAnsi(ptr); // auto -> uni or ansi
+        }
+
+        public override string ToString()
+        {
+            return this.ToString(Encoding.Default, SpssThinWrapper.SPSS_MAX_LONGSTRING);
         }
     }
 }

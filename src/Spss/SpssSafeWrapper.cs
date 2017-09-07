@@ -368,18 +368,20 @@ namespace Spss
         /// This function gets the value of a string variable for the current case, which is the case
         /// read by the most recent call to <see cref="SpssThinWrapper.spssReadCaseRecordDelegate"/>. 
         /// </remarks>
-        public static ReturnCode spssGetValueChar(int handle, double varHandle, out string value)
+        public static ReturnCode spssGetValueChar(int handle, double varHandle, out string value, Encoding encoding)
         {
-            value = new string(' ', SPSS_MAX_LONGSTRING + 1); // leave room for null terminator
-            ReturnCode result = SpssThinWrapper.spssGetValueCharImpl(handle, varHandle, ref value, value.Length);
-            if (result == ReturnCode.SPSS_BUFFER_SHORT)
+            using (var str = EncodedString.Decode(SPSS_MAX_LONGSTRING))
             {
-                value = new string(' ', SPSS_MAX_VERYLONGSTRING + 1);
-                result = SpssThinWrapper.spssGetValueCharImpl(handle, varHandle, ref value, value.Length);
-            }
+                ReturnCode result = SpssThinWrapper.spssGetValueCharImpl(handle, varHandle, str, SPSS_MAX_VERYLONGSTRING + 1);
+                //if (result == ReturnCode.SPSS_BUFFER_SHORT)
+                //{
+                //    value = new string(' ', SPSS_MAX_VERYLONGSTRING + 1);
+                //    result = SpssThinWrapper.spssGetValueCharImpl(handle, varHandle, ref value, SPSS_MAX_VERYLONGSTRING + 1);
+                //}
 
-            value = (result == ReturnCode.SPSS_OK) ? value.Substring(0, value.IndexOf('\0')) : null;
-            return result;
+                value = str.ToString(encoding, SPSS_MAX_VERYLONGSTRING);
+                return result;
+            }
         }
 
         /// <summary>
@@ -557,6 +559,7 @@ namespace Spss
         {
             return SpssThinWrapper.spssGetVarHandleImpl(handle, ref varName, out varHandle);
         }
+
         /// <summary>
         /// Gets the variable label for some named variable.
         /// </summary>
@@ -569,6 +572,7 @@ namespace Spss
         /// <param name="varLabel">
         /// Variable label.
         /// </param>
+        /// <param name="encoding">the encoding to use to decode varLabel</param>
         /// <returns>
         /// <see cref="ReturnCode.SPSS_OK"/>,
         /// <see cref="ReturnCode.SPSS_NO_LABEL"/>, 
@@ -581,13 +585,16 @@ namespace Spss
         /// <paramref>varLabel</paramref>.  To get labels more than 120 characters long, use
         /// the spssGetVarLabelLong function.
         /// </remarks>
-        public static ReturnCode spssGetVarLabel(int handle, string varName, out string varLabel)
+        public static ReturnCode spssGetVarLabel(int handle, string varName, out string varLabel, Encoding encoding)
         {
-            int len;
-            varLabel = new string(' ', SPSS_MAX_LONGSTRING + 1); // leave room for null terminator
-            ReturnCode result = spssGetVarLabelLongImpl(handle, ref varName, ref varLabel, varLabel.Length, out len);
-            varLabel = (result == ReturnCode.SPSS_OK) ? varLabel.Substring(0, len) : varLabel = null;
-            return result;
+            // todo: use GetFileCodePage to get correct encoding
+            using (var str = EncodedString.Decode(SPSS_MAX_VERYLONGSTRING))
+            {
+                int len; // number of bytes stored excluding terminator
+                ReturnCode result = spssGetVarLabelLongImpl(handle, ref varName, str, SPSS_MAX_VERYLONGSTRING, out len);
+                varLabel = str.ToString(encoding, len);
+                return result;
+            }
         }
 
         /// <summary>
@@ -695,13 +702,15 @@ namespace Spss
         /// <remarks>
         /// This function gets the value label for a given value of a short string variable. 
         /// </remarks>
-        public static ReturnCode spssGetVarCValueLabel(int handle, string varName, string value, out string label)
+        public static ReturnCode spssGetVarCValueLabel(int handle, string varName, string value, out string label, Encoding encoding)
         {
-            int len;
-            label = new string(' ', SPSS_MAX_VALLABEL + 1);
-            ReturnCode result = spssGetVarCValueLabelLongImpl(handle, ref varName, ref value, ref label, label.Length, out len);
-            label = (result == ReturnCode.SPSS_OK) ? label.Substring(0, len) : null;
-            return result;
+            using (var str = EncodedString.Decode(SPSS_MAX_VALLABEL))
+            {
+                int len;
+                ReturnCode result = spssGetVarCValueLabelLongImpl(handle, ref varName, ref value, str, SPSS_MAX_VALLABEL, out len);
+                label = str.ToString(encoding, len);
+                return result;
+            }
         }
         /// <summary>
         /// Gets the value label for a given value of a numeric variable.
@@ -730,17 +739,15 @@ namespace Spss
         /// <remarks>
         /// This function gets the value label for a given value of a numeric variable. 
         /// </remarks>
-        public static ReturnCode spssGetVarNValueLabel(int handle, string varName, double value, out string label)
+        public static ReturnCode spssGetVarNValueLabel(int handle, string varName, double value, out string label, Encoding encoding)
         {
-            int len;
-            label = new string(' ', SPSS_MAX_VALLABEL + 1); // leave room for null terminator
-            ReturnCode result = spssGetVarNValueLabelLong(handle, ref varName, value, ref label, label.Length, out len);
-            if (result == ReturnCode.SPSS_OK)
-                label = label.Substring(0, len);
-            else
-                label = null;
-
-            return result;
+            using (var str = EncodedString.Decode(SPSS_MAX_VALLABEL))
+            {
+                int len;
+                ReturnCode result = spssGetVarNValueLabelLong(handle, ref varName, value, str, SPSS_MAX_VALLABEL, out len);
+                label = str.ToString(encoding, len);
+                return result;
+            }
         }
 
         /// <summary>
@@ -2092,7 +2099,7 @@ namespace Spss
         public static string GetVarLabel(int handle, string varName)
         {
             string varLabel;
-            SpssException.ThrowOnFailure(spssGetVarLabel(handle, varName, out varLabel), "spssGetVarLabel");
+            SpssException.ThrowOnFailure(spssGetVarLabel(handle, varName, out varLabel, Encoding.Default), "spssGetVarLabel");
             return varLabel;
         }
 
@@ -2100,7 +2107,7 @@ namespace Spss
         public static string GetVarNValueLabel(int handle, string varName, double value)
         {
             string label;
-            SpssException.ThrowOnFailure(spssGetVarNValueLabel(handle, varName, value, out label), "spssGetVarNValueLabel");
+            SpssException.ThrowOnFailure(spssGetVarNValueLabel(handle, varName, value, out label, Encoding.Default), "spssGetVarNValueLabel");
             return label;
         }
 
@@ -2108,7 +2115,7 @@ namespace Spss
         public static string GetValueChar(int handle, double varHandle)
         {
             string value;
-            SpssException.ThrowOnFailure(spssGetValueChar(handle, varHandle, out value), "spssGetValueChar");
+            SpssException.ThrowOnFailure(spssGetValueChar(handle, varHandle, out value, Encoding.Default), "spssGetValueChar");
             return value;
         }
         #endregion

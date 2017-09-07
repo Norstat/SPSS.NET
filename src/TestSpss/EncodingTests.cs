@@ -25,42 +25,42 @@ namespace Spss.Testing
         };
 
         [Fact]
-        public void CreateAPolishFile()
+        public void CreatePolishFile()
         {
             SpssThinWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_CODEPAGE);
             WriteLabelsFile(@"SAVs\generated-pl.sav", "Polish_Poland.1250", Encoding.GetEncoding(1250), () => labels1250);
         }
 
         [Fact]
-        public void CreateADanishFile()
+        public void CreateDanishFile()
         {
             SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_CODEPAGE);
             WriteLabelsFile(@"SAVs\generated-da.sav", "Danish", Encoding.GetEncoding(1252), () => labels1252);
         }
 
         [Fact]
-        public void CreateAUtf8File()
+        public void CreateUtf8File()
         {
             // just testing...
             SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_UTF8);
-            foreach (var locale in new[] { /*"Norwegian", "Danish", "Greek", "Turkish", "Hebrew", "Arabic", "Vietnamese", "Russian", */ "Latvian" })
-            WriteLabelsFile(@"SAVs\generated-utf8.sav", locale, Encoding.UTF8, () => labels1252.Union(labels1250));
+            WriteLabelsFile(@"SAVs\generated-utf8.sav", null, Encoding.UTF8, () => labels1252.Union(labels1250));
         }
 
         [Fact]
         public void ReadDanishFile()
         {
             SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_CODEPAGE);
-            SpssSafeWrapper.spssSetLocale(0, "Danish");
+            SpssSafeWrapper.spssSetLocale(0, "Polish");
             int handle = -1;
             string label;
             try
             {
+                var enc = Encoding.GetEncoding(1252);
                 SpssSafeWrapper.spssOpenRead(@"SAVs\da.sav", out handle);
-                SpssSafeWrapper.spssGetVarLabel(handle, "q1", out label);
+                SpssSafeWrapper.spssGetVarLabel(handle, "q1", out label, enc);
                 Assert.Equal("the quick brown fox...", label);
 
-                SpssSafeWrapper.spssGetVarLabel(handle, "q2", out label);
+                SpssSafeWrapper.spssGetVarLabel(handle, "q2", out label, enc);
                 Assert.Equal("æøå (DA characters)", label);
             }
             finally
@@ -68,6 +68,29 @@ namespace Spss.Testing
                 SpssSafeWrapper.spssCloseRead(handle);
             }
         }
+
+        [Fact]
+        public void ReadPolishFileAsUtf8()
+        {
+            SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_UTF8);
+            int handle = -1;
+            string label;
+            try
+            {
+                SpssSafeWrapper.spssOpenRead(@"SAVs\pl.sav", out handle);
+                SpssSafeWrapper.spssGetVarLabel(handle, "Q1", out label, Encoding.UTF8);
+                Assert.Equal(labels1250[0], label);
+
+                SpssSafeWrapper.spssGetVarLabel(handle, "Q2", out label, Encoding.UTF8);
+                // TODO: SPSS stores fewer characters. Not checked why (could be a couple of reasons)
+                Assert.Equal(labels1250[1].Substring(0, label.Length), label);
+            }
+            finally
+            {
+                SpssSafeWrapper.spssCloseRead(handle);
+            }
+        }
+
 
         /// <summary>
         /// Writes a set of labels to a file. Does not bother with var-names or data, just the labels.

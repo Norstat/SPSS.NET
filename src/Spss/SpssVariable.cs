@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Diagnostics;
+using System.Text;
 
 namespace Spss
 {
@@ -158,7 +159,7 @@ namespace Spss
                 // may not have been loaded yet.
                 if (label == null && IsCommitted)
                 {
-                    SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarLabel(FileHandle, Name, out label), "spssGetVarLabel", ReturnCode.SPSS_NO_LABEL);
+                    SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarLabel(FileHandle, Name, out label, Encoding.Default), "spssGetVarLabel", ReturnCode.SPSS_NO_LABEL);
                 }
 
                 return label ?? string.Empty;

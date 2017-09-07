@@ -5,6 +5,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Text;
+
 namespace Spss
 {
     using System;
@@ -103,7 +105,7 @@ namespace Spss
             get
             {
                 string v;
-                SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetValueChar(FileHandle, Handle, out v), "spssGetValueChar");
+                SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetValueChar(FileHandle, Handle, out v, Encoding.Default), "spssGetValueChar");
                 return v;
             }
             set

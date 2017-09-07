@@ -1564,7 +1564,7 @@ namespace Spss
         /// of the string variable. Argument valueSize is the allocated size of the buffer value,
         /// which must be at least the length of the variable plus 1.
         /// </remarks>
-        protected delegate ReturnCode spssGetValueCharDelegate(int handle, double varHandle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value, int valueSize);
+        protected delegate ReturnCode spssGetValueCharDelegate(int handle, double varHandle, /*[MarshalAs(UnmanagedType.VBByRefStr)] ref string*/ IntPtr value, int valueSize);
         protected static spssGetValueCharDelegate spssGetValueCharImpl;
         /// <summary>
         /// Gets the numeric value of a variable.
@@ -1761,7 +1761,7 @@ namespace Spss
         /// of data bytes (excluding the null terminator) actually stored. If an error is detected, the
         /// label is returned as a null string, and the length is returned as 0.
         /// </remarks>
-        protected delegate ReturnCode spssGetVarCValueLabelLongDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value, [MarshalAs(UnmanagedType.VBByRefStr)] ref string labelBuff, int lenBuff, out int lenLabel);
+        protected delegate ReturnCode spssGetVarCValueLabelLongDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value, /*[MarshalAs(UnmanagedType.VBByRefStr)] ref string*/ IntPtr labelBuff, int lenBuff, out int lenLabel);
         protected static spssGetVarCValueLabelLongDelegate spssGetVarCValueLabelLongImpl;
 
         /// <summary>
@@ -1959,7 +1959,8 @@ namespace Spss
         /// the number of data bytes (this time excluding the null terminator) stored. If an error is
         /// detected, the label is returned as a null string, and the length is returned as 0.
         /// </remarks>
-        public delegate ReturnCode spssGetVarLabelLongDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string labelBuff, int lenBuff, out int lenLabel);
+        //public delegate ReturnCode spssGetVarLabelLongDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string labelBuff, int lenBuff, out int lenLabel);
+        public delegate ReturnCode spssGetVarLabelLongDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, IntPtr labelBuff /*[MarshalAs(UnmanagedType.VBByRefStr)] ref string labelBuff*/, int lenBuff, out int lenLabel);
         public static spssGetVarLabelLongDelegate spssGetVarLabelLongImpl;
 
         /// <summary>
@@ -2102,7 +2103,7 @@ namespace Spss
         /// actually stored. If an error is detected, the label is returned as a null string, and the
         /// length is returned as 0.
         /// </remarks>
-        protected delegate ReturnCode spssGetVarNValueLabelLongDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, double value, [MarshalAs(UnmanagedType.VBByRefStr)] ref string labelBuff, int lenBuff, out int lenLabel);
+        protected delegate ReturnCode spssGetVarNValueLabelLongDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, double value, /*[MarshalAs(UnmanagedType.VBByRefStr)] ref string*/ IntPtr labelBuff, int lenBuff, out int lenLabel);
         protected static spssGetVarNValueLabelLongDelegate spssGetVarNValueLabelLong;
 
         /// <summary>
