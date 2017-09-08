@@ -82,8 +82,13 @@ namespace Spss.Testing
                 Assert.Equal(labels1250[0], label);
 
                 SpssSafeWrapper.spssGetVarLabel(handle, "Q2", out label, Encoding.UTF8);
-                // TODO: SPSS stores fewer characters. Not checked why (could be a couple of reasons)
+                // SPSS stores fewer characters. Not checked why (could be a couple of reasons)
                 Assert.Equal(labels1250[1].Substring(0, label.Length), label);
+                double[] values;
+                string[] labels;
+                SpssSafeWrapper.spssGetVarNValueLabels(handle, "Q2", out values, out labels);
+                Assert.Equal("Proszę", labels[0]);
+                Assert.Equal("podać", labels[1]);
             }
             finally
             {
