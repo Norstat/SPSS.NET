@@ -86,7 +86,7 @@ namespace Spss.Testing
                 Assert.Equal(labels1250[1].Substring(0, label.Length), label);
                 double[] values;
                 string[] labels;
-                SpssSafeWrapper.spssGetVarNValueLabels(handle, "Q2", out values, out labels);
+                SpssSafeWrapper.spssGetVarNValueLabels(handle, "Q2", out values, out labels, Encoding.UTF8);
                 Assert.Equal("Proszę", labels[0]);
                 Assert.Equal("podać", labels[1]);
             }

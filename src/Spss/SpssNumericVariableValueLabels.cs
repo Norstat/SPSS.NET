@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Spss
 {
     using System;
@@ -36,7 +38,7 @@ namespace Spss
         {
             double[] values;
             string[] labels;
-            ReturnCode result = SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarNValueLabels(FileHandle, Variable.Name, out values, out labels), "spssGetVarNValueLabels", ReturnCode.SPSS_NO_LABELS);
+            ReturnCode result = SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarNValueLabels(FileHandle, Variable.Name, out values, out labels, Encoding.Default), "spssGetVarNValueLabels", ReturnCode.SPSS_NO_LABELS);
             if (result == ReturnCode.SPSS_OK)
             {
                 Debug.Assert(values.Length == labels.Length);

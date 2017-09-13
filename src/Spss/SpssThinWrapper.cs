@@ -1029,7 +1029,8 @@ namespace Spss
         /// by <see cref="spssGetVarCValueLabelsDelegate"/>.
         /// </remarks>
         [CLSCompliant(false)]
-        unsafe protected delegate ReturnCode spssFreeVarCValueLabelsDelegate(char** values, char** labels, int numLabels);
+        //unsafe protected delegate ReturnCode spssFreeVarCValueLabelsDelegate(char** values, char** labels, int numLabels);
+        unsafe protected delegate ReturnCode spssFreeVarCValueLabelsDelegate(IntPtr values, IntPtr labels, int numLabels);
         [CLSCompliant(false)]
         protected static spssFreeVarCValueLabelsDelegate spssFreeVarCValueLabelsImpl;
 
@@ -1096,7 +1097,8 @@ namespace Spss
         /// by <see cref="spssGetVarCValueLabelsDelegate"/>.
         /// </remarks>
         [CLSCompliant(false)]
-        unsafe protected delegate ReturnCode spssFreeVarNValueLabelsDelegate(double* values, char** labels, int numLabels);
+        //unsafe protected delegate ReturnCode spssFreeVarNValueLabelsDelegate(double* values, char** labels, int numLabels);
+        unsafe protected delegate ReturnCode spssFreeVarNValueLabelsDelegate(double* values, IntPtr labels, int numLabels);
         [CLSCompliant(false)]
         protected static spssFreeVarNValueLabelsDelegate spssFreeVarNValueLabels;
 
@@ -1804,7 +1806,7 @@ namespace Spss
         /// are no longer needed, <see cref="spssFreeVarCValueLabelsDelegate"/> should be called to free the memory.
         /// </remarks>
         [CLSCompliant(false)]
-        unsafe protected delegate ReturnCode spssGetVarCValueLabelsDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, out char** values, out char** labels, out int numLabels);
+        unsafe protected delegate ReturnCode spssGetVarCValueLabelsDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, out /*char***/ IntPtr values, out /*char***/ IntPtr labels, out int numLabels);
         [CLSCompliant(false)]
         protected static spssGetVarCValueLabelsDelegate spssGetVarCValueLabelsImpl;
 
@@ -2144,7 +2146,7 @@ namespace Spss
         /// needed, <see cref="spssFreeVarNValueLabelsDelegate"/> should be called to free the memory.
         /// </remarks>
         [CLSCompliant(false)]
-        unsafe protected delegate ReturnCode spssGetVarNValueLabelsDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, out double* values, out char** labels, out int numLabels);
+        unsafe protected delegate ReturnCode spssGetVarNValueLabelsDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, out double* values, /*out char***/ out IntPtr labels, out int numLabels);
         [CLSCompliant(false)]
         protected static spssGetVarNValueLabelsDelegate spssGetVarNValueLabelsImpl;
 

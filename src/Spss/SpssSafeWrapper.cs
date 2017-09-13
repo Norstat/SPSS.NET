@@ -379,7 +379,7 @@ namespace Spss
                 //    result = SpssThinWrapper.spssGetValueCharImpl(handle, varHandle, ref value, SPSS_MAX_VERYLONGSTRING + 1);
                 //}
 
-                value = str.ToString(encoding, SPSS_MAX_VERYLONGSTRING);
+                value = str.ToString(encoding);
                 return result;
             }
         }
@@ -592,7 +592,7 @@ namespace Spss
             {
                 int len; // number of bytes stored excluding terminator
                 ReturnCode result = spssGetVarLabelLongImpl(handle, ref varName, str, SPSS_MAX_VERYLONGSTRING, out len);
-                varLabel = str.ToString(encoding, len);
+                varLabel = str.ToString(encoding/*, len*/);
                 return result;
             }
         }
@@ -1919,28 +1919,28 @@ namespace Spss
         /// The two arrays and the label strings are allocated on the heap. When they are no longer
         /// needed, <see cref="SpssThinWrapper.spssFreeVarNValueLabelsDelegate"/> should be called to free the memory.
         /// </remarks>
-        unsafe public static ReturnCode spssGetVarNValueLabels(int handle, string varName, out double[] values, out string[] labels)
+        public static unsafe ReturnCode spssGetVarNValueLabels(int handle, string varName, out double[] values, out string[] labels, Encoding encoding)
         {
             double* cValues;
-            char** cLabels;
             int numLabels;
-            ReturnCode result = SpssException.ThrowOnFailure(SpssThinWrapper.spssGetVarNValueLabelsImpl(handle, ref varName, out cValues, out cLabels, out numLabels), "spssGetVarNValueLabels", ReturnCode.SPSS_NO_LABELS);
+            IntPtr ptr;
+            var result = SpssThinWrapper.spssGetVarNValueLabelsImpl(handle, ref varName, out cValues, out ptr, out numLabels);
             if (result == ReturnCode.SPSS_NO_LABELS)
             {
                 values = new double[0];
                 labels = new string[0];
             }
             else
-            { // ReturnCode.SPSS_OK
+            {
                 values = new double[numLabels];
-                labels = new string[numLabels];
-                for (int i = 0; i < numLabels; i++)
+                for (var i = 0; i < numLabels; i++)
                 {
                     values[i] = cValues[i];
-                    labels[i] = Marshal.PtrToStringAnsi(new IntPtr(cLabels[i]));
                 }
-                spssFreeVarNValueLabels(cValues, cLabels, numLabels);
+                labels = EncodedString.DecodeArray(ptr, encoding, numLabels);
             }
+
+            SpssThinWrapper.spssFreeVarNValueLabels(cValues, ptr, numLabels);
 
             return result;
         }
@@ -1960,6 +1960,7 @@ namespace Spss
         /// <param name="labels">
         /// Array of labels.
         /// </param>
+        /// <param name="encoding">The encoding</param>
         /// <returns>
         /// <see cref="ReturnCode.SPSS_OK"/>,
         /// <see cref="ReturnCode.SPSS_NO_LABELS"/>,
@@ -1981,29 +1982,24 @@ namespace Spss
         /// The two arrays and the value and label strings are allocated on the heap. When they
         /// are no longer needed, <see cref="SpssThinWrapper.spssFreeVarCValueLabelsDelegate"/> should be called to free the memory.
         /// </remarks>
-        unsafe public static ReturnCode spssGetVarCValueLabels(int handle, string varName, out string[] values, out string[] labels)
+        public static unsafe ReturnCode spssGetVarCValueLabels(int handle, string varName, out string[] values, out string[] labels, Encoding encoding)
         {
-            char** cValues;
-            char** cLabels;
             int numLabels;
-
-            ReturnCode result = SpssException.ThrowOnFailure(SpssThinWrapper.spssGetVarCValueLabelsImpl(handle, ref varName, out cValues, out cLabels, out numLabels), "spssGetVarCValueLabels", ReturnCode.SPSS_NO_LABELS);
+            IntPtr ptrLabels;
+            IntPtr ptrValues;
+            var result = SpssThinWrapper.spssGetVarCValueLabelsImpl(handle, ref varName, out ptrValues, out ptrLabels, out numLabels);
             if (result == ReturnCode.SPSS_NO_LABELS)
             {
                 values = new string[0];
                 labels = new string[0];
             }
             else
-            { // ReturnCode.SPSS_OK
-                values = new string[numLabels];
-                labels = new string[numLabels];
-                for (int i = 0; i < numLabels; i++)
-                {
-                    values[i] = Marshal.PtrToStringAnsi(new IntPtr(cValues[i]));
-                    labels[i] = Marshal.PtrToStringAnsi(new IntPtr(cLabels[i]));
-                }
-                SpssThinWrapper.spssFreeVarCValueLabelsImpl(cValues, cLabels, numLabels);
+            {
+                values = EncodedString.DecodeArray(ptrValues, encoding, numLabels);
+                labels = EncodedString.DecodeArray(ptrLabels, encoding, numLabels);
             }
+
+            SpssThinWrapper.spssFreeVarCValueLabelsImpl(ptrValues, ptrLabels, numLabels);
 
             return result;
         }

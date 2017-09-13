@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Collections;
+using System.Text;
 
 namespace Spss
 {
@@ -74,7 +75,7 @@ namespace Spss
 
             string[] values;
             string[] labels;
-            ReturnCode result = SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarCValueLabels(FileHandle, Variable.Name, out values, out labels), "spssGetVarCValueLabels", ReturnCode.SPSS_NO_LABELS);
+            ReturnCode result = SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarCValueLabels(FileHandle, Variable.Name, out values, out labels, Encoding.Default), "spssGetVarCValueLabels", ReturnCode.SPSS_NO_LABELS);
             if (result == ReturnCode.SPSS_OK)
             { // ReturnCode.SPSS_NO_LABELS is nothing special -- just no labels to add
                 Debug.Assert(values.Length == labels.Length);

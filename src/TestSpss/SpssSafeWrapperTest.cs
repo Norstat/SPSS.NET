@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Spss;
 using Xunit;
 
@@ -40,7 +41,7 @@ namespace Spss.Testing
             string varName = "numLabels";
             double[] values;
             string[] labels;
-            SpssSafeWrapper.spssGetVarNValueLabels(handle, varName, out values, out labels);
+            SpssSafeWrapper.spssGetVarNValueLabels(handle, varName, out values, out labels, Encoding.Default);
             Assert.Equal(23, values.Length);
             Assert.Equal(23, labels.Length);
 
@@ -57,7 +58,7 @@ namespace Spss.Testing
             string varName = "charLabels";
             string[] values;
             string[] labels;
-            SpssSafeWrapper.spssGetVarCValueLabels(handle, varName, out values, out labels);
+            SpssSafeWrapper.spssGetVarCValueLabels(handle, varName, out values, out labels, Encoding.Default);
             Assert.Equal(2, values.Length);
             Assert.Equal(2, labels.Length);
 
