@@ -3316,6 +3316,20 @@ namespace Spss
         public static SpssSetInterfaceEncodingDelegate spssSetInterfaceEncodingImpl;
 
         /// <summary>
+        /// This function obtains the encoding applicable to a file. 
+        /// The encoding is returned as an IANA encoding name, such as ISO-8859-1.  
+        /// The maximum length of the returned string is SPSS_MAX_ENCODING plus a null terminator.
+        /// </summary>
+        /// <param name="handle">Handle to the file</param>
+        /// <param name="pszEncoding">Returned as the encoding of the file</param>
+        /// <returns>
+        /// <see cref="ReturnCode.SPSS_OK"/>,
+        /// <see cref="ReturnCode.SPSS_INVALID_HANDLE"/>,
+        /// </returns>
+        public delegate ReturnCode spssGetFileEncodingDelegate(int handle, IntPtr pszEncoding);
+        public static spssGetFileEncodingDelegate spssGetFileEncodingImpl;
+
+        /// <summary>
         /// Constructor for <see cref="SpssThinWrapper"/> class.  Not to be used.
         /// </summary>
         /// <remarks>
@@ -3471,11 +3485,24 @@ namespace Spss
             spssGetInterfaceEncodingImpl = (SpssGetInterfaceEncodingDelegate)GetSpssDelegate("spssGetInterfaceEncoding", typeof(SpssGetInterfaceEncodingDelegate));
             spssSetInterfaceEncodingImpl = (SpssSetInterfaceEncodingDelegate)GetSpssDelegate("spssSetInterfaceEncoding", typeof(SpssSetInterfaceEncodingDelegate));
             spssSetLocaleImpl = (spssSetLocale)GetSpssDelegate("spssSetLocale", typeof(spssSetLocale));
+            spssGetFileEncodingImpl = GetSpssDelegate<spssGetFileEncodingDelegate>("spssGetFileEncoding");
         }
 
         private static IntPtr spssDllHandle = IntPtr.Zero;
 
         private static readonly object _lock = new object();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T">The delegate</typeparam>
+        /// <param name="procName">The method name. If null will use the type name of <typeparamref name="T"/></param>
+        internal static T GetSpssDelegate<T>(string procName = null) where T : class
+        {
+            var delegateType = typeof(T);
+            if (procName == null) procName = delegateType.Name;
+            return GetSpssDelegate(procName, delegateType) as T;
+        }
 
         internal static Delegate GetSpssDelegate(string procName, Type delegateType)
         {

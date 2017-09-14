@@ -21,6 +21,7 @@ namespace Spss.Testing
         {
             try
             {
+                SpssThinWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_CODEPAGE);
                 docRead = SpssDataDocument.Open(GoodFilename, SpssFileAccess.Read);
                 docAppend = SpssDataDocument.Open(AppendFilename, SpssFileAccess.Append);
                 if (File.Exists(DisposableFilename))

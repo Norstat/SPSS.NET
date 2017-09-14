@@ -370,18 +370,21 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssGetValueChar(int handle, double varHandle, out string value, Encoding encoding)
         {
-            using (var str = EncodedString.Decode(SPSS_MAX_LONGSTRING))
+            ReturnCode result;
+            var lengths = new[] { SPSS_MAX_LONGSTRING + 1, 2048 + 1, SPSS_MAX_VERYLONGSTRING + 1 }; // +1 for null terminator
+            var i = 0;
+            do
             {
-                ReturnCode result = SpssThinWrapper.spssGetValueCharImpl(handle, varHandle, str, SPSS_MAX_VERYLONGSTRING + 1);
-                //if (result == ReturnCode.SPSS_BUFFER_SHORT)
-                //{
-                //    value = new string(' ', SPSS_MAX_VERYLONGSTRING + 1);
-                //    result = SpssThinWrapper.spssGetValueCharImpl(handle, varHandle, ref value, SPSS_MAX_VERYLONGSTRING + 1);
-                //}
-
-                value = str.ToString(encoding);
-                return result;
-            }
+                var len = lengths[i++];
+                using (var str = new EncodedString(len))
+                {
+                    value = null;
+                    result = SpssThinWrapper.spssGetValueCharImpl(handle, varHandle, str, len);
+                    value = result == ReturnCode.SPSS_OK ? str.ToString(encoding) : null;
+                    if (result != ReturnCode.SPSS_BUFFER_SHORT) return result;
+                }
+            } while (result == ReturnCode.SPSS_BUFFER_SHORT && i < lengths.Length);
+            return result;
         }
 
         /// <summary>
@@ -587,12 +590,11 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssGetVarLabel(int handle, string varName, out string varLabel, Encoding encoding)
         {
-            // todo: use GetFileCodePage to get correct encoding
-            using (var str = EncodedString.Decode(SPSS_MAX_VERYLONGSTRING))
+            using (var str = new EncodedString(SPSS_MAX_LONGSTRING + 1))
             {
                 int len; // number of bytes stored excluding terminator
-                ReturnCode result = spssGetVarLabelLongImpl(handle, ref varName, str, SPSS_MAX_VERYLONGSTRING, out len);
-                varLabel = str.ToString(encoding/*, len*/);
+                ReturnCode result = spssGetVarLabelLongImpl(handle, ref varName, str, SPSS_MAX_LONGSTRING+1, out len); // len is without terminator
+                varLabel = str.ToString(encoding, len);
                 return result;
             }
         }
@@ -704,10 +706,10 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssGetVarCValueLabel(int handle, string varName, string value, out string label, Encoding encoding)
         {
-            using (var str = EncodedString.Decode(SPSS_MAX_VALLABEL))
+            using (var str = new EncodedString(SPSS_MAX_VALLABEL))
             {
                 int len;
-                ReturnCode result = spssGetVarCValueLabelLongImpl(handle, ref varName, ref value, str, SPSS_MAX_VALLABEL, out len);
+                ReturnCode result = spssGetVarCValueLabelLongImpl(handle, ref varName, ref value, str, SPSS_MAX_VALLABEL, out len); // len excluding \0 terminator
                 label = str.ToString(encoding, len);
                 return result;
             }
@@ -741,10 +743,10 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssGetVarNValueLabel(int handle, string varName, double value, out string label, Encoding encoding)
         {
-            using (var str = EncodedString.Decode(SPSS_MAX_VALLABEL))
+            using (var str = new EncodedString(SPSS_MAX_VALLABEL))
             {
                 int len;
-                ReturnCode result = spssGetVarNValueLabelLong(handle, ref varName, value, str, SPSS_MAX_VALLABEL, out len);
+                ReturnCode result = spssGetVarNValueLabelLong(handle, ref varName, value, str, SPSS_MAX_VALLABEL, out len); // len excluding \0 terminator
                 label = str.ToString(encoding, len);
                 return result;
             }
@@ -1157,7 +1159,7 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssSetValueChar(int handle, double varHandle, string value, Encoding encoding)
         {
-            using (var txt = EncodedString.Encode(value, encoding))
+            using (var txt = new EncodedString(value, encoding))
             {
                 return SpssThinWrapper.spssSetValueCharImpl(handle, varHandle, txt);
             }
@@ -1332,7 +1334,7 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssSetVarLabel(int handle, string varName, string varLabel, Encoding encoding)
         {
-            using (var lbl = EncodedString.Encode(varLabel, encoding))
+            using (var lbl = new EncodedString(varLabel, encoding))
             {
                 return SpssThinWrapper.spssSetVarLabelImpl(handle, ref varName, lbl);
             }
@@ -1616,7 +1618,7 @@ namespace Spss
         /// </remarks>
         public static ReturnCode spssSetVarNValueLabel(int handle, string varName, double value, string label, Encoding encoding)
         {
-            using (var lbl = EncodedString.Encode(label, encoding))
+            using (var lbl = new EncodedString(label, encoding))
             {
                 return SpssThinWrapper.spssSetVarNValueLabelImpl(handle, ref varName, value, lbl);
             }
@@ -1941,6 +1943,7 @@ namespace Spss
             }
 
             SpssThinWrapper.spssFreeVarNValueLabels(cValues, ptr, numLabels);
+            Marshal.FreeCoTaskMem(ptr);
 
             return result;
         }
@@ -2050,6 +2053,16 @@ namespace Spss
                 spssFreeVarNamesImpl(cVarNames, cVarTypes, numVars);
             }
             return result;
+        }
+
+        public static ReturnCode spssGetFileEncoding(int handle, out string pszEncoding)
+        {
+            using (var str = new EncodedString(SPSS_MAX_IDSTRING + 1))
+            {
+                var result = spssGetFileEncodingImpl(handle, str);
+                pszEncoding = str.ToString(Encoding.ASCII);
+                return result;
+            }
         }
 
         /// <summary>

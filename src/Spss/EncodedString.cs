@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Win32.SafeHandles;
 
 namespace Spss
 {
@@ -13,13 +14,42 @@ namespace Spss
     /// the encoding and bytes ourselves using an IntPtr. If we just use a C# string,
     /// then at best - it would work in local or utf-8 mode, but not both.
     /// </summary>
-    public class EncodedString : SafeHandle // invalid values?
+    /// <remarks>
+    /// See http://blog.benoitblanchon.fr/safehandle/
+    /// </remarks>
+    public class EncodedString : SafeHandleZeroOrMinusOneIsInvalid
     {
-        private EncodedString(IntPtr invalidHandleValue) : base(invalidHandleValue, true)
+        #region Instance
+
+        /// <summary>
+        /// Create a buffer for SETting string to sav
+        /// Always wrap this in a using statement!
+        /// </summary>
+        public EncodedString(string value, Encoding encoding) : base(true)
         {
+            var encodedBytes = Encoding.Convert(Encoding.Unicode, encoding, Encoding.Unicode.GetBytes(value));
+
+            // create encoded byte array with null terminater (hence +1)
+            var ptrData = new byte[encodedBytes.Length + 1];
+            encodedBytes.CopyTo(ptrData, 0);
+            ptrData[ptrData.Length - 1] = 0; // null terminate the string
+
+            // create the intptr
+            this.SetHandle(Marshal.AllocHGlobal(ptrData.Length));
+
+            // and copy data
+            Marshal.Copy(ptrData, 0, this.handle, ptrData.Length);
         }
 
-        public string Value { get; private set; }
+        /// <summary>
+        /// Create a string buffer for GETting string from sav.
+        /// Always wrap this in a using statement!
+        /// </summary>
+        /// <param name="byteLength"></param>
+        public EncodedString(int byteLength) : base(true)
+        {
+            this.SetHandle(Marshal.AllocHGlobal(byteLength));
+        }
 
         protected override bool ReleaseHandle()
         {
@@ -34,41 +64,33 @@ namespace Spss
             }
         }
 
-        public override bool IsInvalid { get; } = false; // all handle values are valid?
+        /// <summary>
+        /// Decode into string. Expects a null terminated char array
+        /// </summary>
+        /// <param name="encoding"></param>
+        public string ToString(Encoding encoding)
+        {
+            return Decode(this.handle, encoding);
+        }
 
         /// <summary>
-        /// Encode using custom encoding
+        /// Decode into string
         /// </summary>
-        public static EncodedString Encode(string str, Encoding encoding)
+        /// <param name="encoding"></param>
+        /// <param name="length">the number of bytes</param>
+        public string ToString(Encoding encoding, int length)
         {
-            // this code is inspired by these solutions
-            // http://stackoverflow.com/questions/13289171/marshalasunmanagedtype-lpstr-how-does-this-convert-utf-8-strings-to-char
-            // http://stackoverflow.com/questions/17562295/if-i-allocate-some-memory-with-allochglobal-do-i-have-to-free-it-with-freehglob
-            // 
-            // SPSS needs a single-byte null terminated char array, similar to UnmanagedType.LPStr.
-            // All .Net strings are utf-16, so we can't pass on a string, because it needs to be correctly encoded.
-            // We have to use an IntPtr and an array with the encoded bytes.
-
-            // Because .Net strings are utf-16 we convert from Unicode to target encoding
-            var encodedBytes = Encoding.Convert(Encoding.Unicode, encoding, Encoding.Unicode.GetBytes(str));
-
-            // copy the encoded bytes to a null terminated array
-            var ptrData = new byte[encodedBytes.Length + 1];
-            encodedBytes.CopyTo(ptrData, 0);
-            ptrData[ptrData.Length - 1] = 0;
-
-            // create an IntPtr and copy the bytes
-            var ptr = Marshal.AllocHGlobal(ptrData.Length);
-            Marshal.Copy(ptrData, 0, ptr, ptrData.Length);
-
-            return new EncodedString(ptr);
+            return Decode(this.handle, encoding, length);
         }
 
-        public static EncodedString Decode(int length = SpssThinWrapper.SPSS_MAX_VERYLONGSTRING)
+        public override string ToString()
         {
-            var ptr = Marshal.AllocHGlobal(length);
-            return new EncodedString(ptr);
+            return this.ToString(Encoding.Default);
         }
+
+        #endregion
+
+        #region Static
 
         /// <summary>
         /// Decode an IntPtr to a string when you don't know the length. This
@@ -81,7 +103,7 @@ namespace Spss
             byte b;
             var bytes = new List<byte>();
             var offset = 0;
-            while ((b = Marshal.ReadByte(ptr, offset++)) != 0)
+            while ((b = Marshal.ReadByte(ptr, offset++)) != 0 && offset < SpssThinWrapper.SPSS_MAX_VERYLONGSTRING)
             {
                 bytes.Add(b);
             }
@@ -93,21 +115,19 @@ namespace Spss
         /// </summary>
         /// <remarks>
         /// This is based on https://limbioliong.wordpress.com/2011/08/14/returning-an-array-of-strings-from-c-to-c-part-1/
-        /// I'm uncertain whether to call FreeCoTaskMem or not. Seems to work in some cases, but not in others. 
-        /// spssFreeVarNValueLabels Should free the memory, right? Leaving them commented for now.
+        /// I'm uncertain whether to call FreeHGlobal/FreeCoTaskMem or not. Seems to work in some cases, but not in others. 
+        /// spssFreeVarNValueLabels Should free the memory, right?
         /// </remarks>
-        public static unsafe string[] DecodeArray(IntPtr ptr, Encoding encoding, int len)
+        public static string[] DecodeArray(IntPtr ptr, Encoding encoding, int arraySize)
         {
-            var result = new string[len];
-            var ptrArray = new IntPtr[len];
-            Marshal.Copy(ptr, ptrArray, 0, len);
-            for (var i = 0; i < len; i++)
+            var result = new string[arraySize];
+            var ptrArray = new IntPtr[arraySize];
+            Marshal.Copy(ptr, ptrArray, 0, arraySize);
+            for (var i = 0; i < arraySize; i++)
             {
                 var p = ptrArray[i];
                 result[i] = Decode(p, encoding);
-                //Marshal.FreeCoTaskMem(p);
             }
-            //Marshal.FreeCoTaskMem(ptr);
             return result;
         }
 
@@ -134,28 +154,6 @@ namespace Spss
             return str.handle;
         }
 
-        /// <summary>
-        /// Decode into string. Expects a null terminated char array
-        /// </summary>
-        /// <param name="encoding"></param>
-        public string ToString(Encoding encoding)
-        {
-            return Decode(this.handle, encoding);
-        }
-
-        /// <summary>
-        /// Decode into string
-        /// </summary>
-        /// <param name="encoding"></param>
-        /// <param name="length">the number of bytes</param>
-        public string ToString(Encoding encoding, int length)
-        {
-            return Decode(this.handle, encoding, length);
-        }
-
-        public override string ToString()
-        {
-            return this.ToString(Encoding.Default);
-        }
+        #endregion
     }
 }
