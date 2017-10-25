@@ -306,7 +306,7 @@ namespace Spss
 
             string[] varNames;
             int[] varTypes;
-            ReturnCode result = SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarNames(FileHandle, out varNames, out varTypes), "spssGetVarNames", ReturnCode.SPSS_INVALID_FILE);
+            ReturnCode result = SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarNames(FileHandle, out varNames, out varTypes, System.Text.Encoding.Default), "spssGetVarNames", ReturnCode.SPSS_INVALID_FILE);
             if (result == ReturnCode.SPSS_INVALID_FILE)
             {
                 // brand new file

@@ -175,14 +175,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlignmentCode.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="EmbeddedResources.cs" />
     <Compile Include="EncodedString.cs" />
+    <Compile Include="FormatTypeCode.cs" />
+    <Compile Include="InterfaceEncoding.cs" />
+    <Compile Include="MeasurementLevelCode.cs" />
+    <Compile Include="MissingValueFormatCode.cs" />
     <Compile Include="Project.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ReturnCode.cs" />
     <Compile Include="SpssCase.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -231,6 +237,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SpssVariableValueLabels.cs" />
+    <Compile Include="Type7Record.cs" />
+    <Compile Include="VarNameDiagnostic.cs" />
     <EmbeddedResource Include="blankDdi.xml" />
   </ItemGroup>
   <ItemGroup>

@@ -74,7 +74,7 @@ namespace Spss.Testing
         {
             string[] varNames;
             int[] formatTypes;
-            SpssSafeWrapper.spssGetVarNames(handle, out varNames, out formatTypes);
+            SpssSafeWrapper.spssGetVarNames(handle, out varNames, out formatTypes, System.Text.Encoding.Default);
             Assert.Equal(Test1VarNames.Length, varNames.Length);
             Assert.Equal(Test1VarNames.Length, formatTypes.Length);
 

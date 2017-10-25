@@ -120,6 +120,12 @@ namespace Spss
         /// </remarks>
         public static string[] DecodeArray(IntPtr ptr, Encoding encoding, int arraySize)
         {
+            if (ptr == IntPtr.Zero || arraySize == 0)
+            {
+                // Marshal.Copy throw if ptr is Zero!?
+                return new string[0];
+            }
+
             var result = new string[arraySize];
             var ptrArray = new IntPtr[arraySize];
             Marshal.Copy(ptr, ptrArray, 0, arraySize);

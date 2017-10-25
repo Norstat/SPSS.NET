@@ -13,8 +13,11 @@ namespace Spss.Testing
     // Recommend you run them one at a time.
     public class EncodingTests : IDisposable
     {
-        //private const string Skip = null; // all tests enabaled
-        private const string Skip = "All tests disabled";
+        //
+        // Note to self: TestDriven.Net may keep files open and causing tests to fail. Close all TestDriven.Net instances and try again.
+
+        private const string Skip = null; // all tests enabaled
+        //private const string Skip = "All tests disabled";
 
         [Fact(Skip=Skip)]
         public void ReadDanishFile()
@@ -32,6 +35,12 @@ namespace Spss.Testing
                 SpssSafeWrapper.spssGetFileEncoding(handle, out fileEnc);
                 Assert.Equal("windows-1252", fileEnc);
 
+                string[] varNames;
+                int[] varTypes;
+                SpssSafeWrapper.spssGetVarNames(handle, out varNames, out varTypes, enc);
+                Assert.Equal("æøå", varNames[3]);
+                Assert.Equal("äÄâ", varNames[4]);
+
                 SpssSafeWrapper.spssGetVarLabel(handle, "q1", out label, enc);
                 Assert.Equal("the quick brown fox...", label);
 
@@ -44,6 +53,57 @@ namespace Spss.Testing
                 Assert.Equal("Æ", labels[0]);
                 Assert.Equal("Ø", labels[1]);
                 Assert.Equal("Å", labels[2]);
+
+                SpssSafeWrapper.spssGetVarNValueLabels(handle, "æøå", out values, out labels, enc);
+                Assert.Equal("ä", labels[0]);
+                Assert.Equal("ö", labels[1]);
+                Assert.Equal("ë", labels[2]);
+            }
+            finally
+            {
+                SpssSafeWrapper.spssCloseRead(handle);
+            }
+        }
+
+        [Fact(Skip = Skip)]
+        public void ReadNorwegianFileAsUtf8()
+        {
+            // I think it's actually Swedish
+            SpssSafeWrapper.spssSetInterfaceEncodingImpl(InterfaceEncoding.SPSS_ENCODING_UTF8);
+            SpssSafeWrapper.spssSetLocale(0, "Norwegian");
+            int handle = -1;
+            try
+            {
+                var enc = Encoding.UTF8;
+                SpssSafeWrapper.spssOpenRead(@"SAVs\nb_utf8.sav", out handle);
+
+                string fileEnc;
+                SpssSafeWrapper.spssGetFileEncoding(handle, out fileEnc);
+                //Assert.Equal("UTF-8", fileEnc); // not utf-8?
+
+                string[] varNames;
+                int[] varTypes;
+                SpssSafeWrapper.spssGetVarNames(handle, out varNames, out varTypes, enc);
+                Assert.Equal("Miljö_int", varNames[0]);
+                Assert.Equal("Miss_ång", varNames[1]);
+                Assert.Equal("Ensam_för", varNames[2]);
+                Assert.Equal("Bet_köp", varNames[3]);
+
+                foreach (var name in varNames)
+                {
+                    string lbl;
+                    SpssSafeWrapper.spssGetVarLabel(handle, name, out lbl, enc);
+                    Assert.NotNull(lbl);
+                }
+
+                foreach (var name in varNames)
+                {
+                    double[] values;
+                    string[] labels;
+                    SpssSafeWrapper.spssGetVarNValueLabels(handle, name, out values, out labels, enc);
+                    Assert.NotEmpty(values);
+                    Assert.NotEmpty(labels);
+                }
             }
             finally
             {
@@ -79,7 +139,7 @@ namespace Spss.Testing
                 Assert.Equal("podać", labels[1]);
 
                 double q4;
-                SpssSafeWrapper.spssGetVarHandle(handle, "Q4", out q4);
+                SpssSafeWrapper.spssGetVarHandle(handle, "Q4", out q4, Encoding.UTF8);
                 while (SpssSafeWrapper.spssReadCaseRecord(handle) == ReturnCode.SPSS_OK)
                 {
                     string answer;

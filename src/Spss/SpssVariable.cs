@@ -36,7 +36,7 @@ namespace Spss
         {
             if (varName == null || varName.Length == 0)
                 throw new ArgumentNullException("varName");
-            ReturnCode result = SpssSafeWrapper.spssGetVarHandle(FileHandle, varName, out variableHandle);
+            ReturnCode result = SpssSafeWrapper.spssGetVarHandle(FileHandle, varName, out variableHandle, Encoding.Default);
 
             switch (result)
             {
@@ -389,7 +389,7 @@ namespace Spss
         private void Document_DictionaryCommitted(object sender, EventArgs e)
         {
             // Set the variable handle			
-            SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarHandle(FileHandle, Name, out variableHandle), "spssGetVarHandle");
+            SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarHandle(FileHandle, Name, out variableHandle, Encoding.Default), "spssGetVarHandle");
         }
         #endregion
     }

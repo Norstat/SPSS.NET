@@ -558,9 +558,12 @@ namespace Spss
         /// with an output file, the dictionary must be written with <see cref="SpssThinWrapper.spssCommitHeaderDelegate"/> 
         /// before variable handles can be obtained via spssGetVarHandle.
         /// </remarks>
-        public static ReturnCode spssGetVarHandle(int handle, string varName, out double varHandle)
+        public static ReturnCode spssGetVarHandle(int handle, string varName, out double varHandle, Encoding encoding)
         {
-            return SpssThinWrapper.spssGetVarHandleImpl(handle, ref varName, out varHandle);
+            using (var ptr = new EncodedString(varName, encoding))
+            {
+                return SpssThinWrapper.spssGetVarHandleImpl(handle, ptr, out varHandle);
+            }
         }
 
         /// <summary>
@@ -591,9 +594,10 @@ namespace Spss
         public static ReturnCode spssGetVarLabel(int handle, string varName, out string varLabel, Encoding encoding)
         {
             using (var str = new EncodedString(SPSS_MAX_LONGSTRING + 1))
+            using(var ptrName = new EncodedString(varName, encoding))
             {
                 int len; // number of bytes stored excluding terminator
-                ReturnCode result = spssGetVarLabelLongImpl(handle, ref varName, str, SPSS_MAX_LONGSTRING+1, out len); // len is without terminator
+                ReturnCode result = spssGetVarLabelLongImpl(handle, ptrName, str, SPSS_MAX_LONGSTRING + 1, out len); // len is without terminator
                 varLabel = str.ToString(encoding, len);
                 return result;
             }
@@ -1925,8 +1929,13 @@ namespace Spss
         {
             double* cValues;
             int numLabels;
-            IntPtr ptr;
-            var result = SpssThinWrapper.spssGetVarNValueLabelsImpl(handle, ref varName, out cValues, out ptr, out numLabels);
+            IntPtr ptrLabels;
+            ReturnCode result;
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                // nb: varname worked with 'ref string' until came across varnames with ö in them, then failed. IntPtr works with ö.
+                result = SpssThinWrapper.spssGetVarNValueLabelsImpl(handle, ptrName, out cValues, out ptrLabels, out numLabels);
+            }
             if (result == ReturnCode.SPSS_NO_LABELS)
             {
                 values = new double[0];
@@ -1939,11 +1948,10 @@ namespace Spss
                 {
                     values[i] = cValues[i];
                 }
-                labels = EncodedString.DecodeArray(ptr, encoding, numLabels);
+                labels = EncodedString.DecodeArray(ptrLabels, encoding, numLabels);
             }
 
-            SpssThinWrapper.spssFreeVarNValueLabels(cValues, ptr, numLabels);
-            Marshal.FreeCoTaskMem(ptr);
+            SpssThinWrapper.spssFreeVarNValueLabels(cValues, ptrLabels, numLabels);
 
             return result;
         }
@@ -2030,12 +2038,12 @@ namespace Spss
         /// The type code is an integer in the range 0-255, 0 indicating a numeric
         /// variable and a positive value indicating a string variable of that size.
         /// </remarks>
-        unsafe public static ReturnCode spssGetVarNames(int handle, out string[] varNames, out int[] varTypes)
+        unsafe public static ReturnCode spssGetVarNames(int handle, out string[] varNames, out int[] varTypes, Encoding encoding)
         {
             int numVars;
-            char** cVarNames;
+            IntPtr ptrNames;
             int* cVarTypes;
-            ReturnCode result = SpssThinWrapper.spssGetVarNamesImpl(handle, out numVars, out cVarNames, out cVarTypes);
+            var result = SpssThinWrapper.spssGetVarNamesImpl(handle, out numVars, out ptrNames, out cVarTypes);
             if (result != ReturnCode.SPSS_OK)
             {
                 varNames = null;
@@ -2043,14 +2051,13 @@ namespace Spss
             }
             else // all is well
             {
-                varNames = new string[numVars];
                 varTypes = new int[numVars];
                 for (int i = 0; i < numVars; i++)
                 {
-                    varNames[i] = Marshal.PtrToStringAnsi(new IntPtr(cVarNames[i]));
                     varTypes[i] = cVarTypes[i];
                 }
-                spssFreeVarNamesImpl(cVarNames, cVarTypes, numVars);
+                varNames = EncodedString.DecodeArray(ptrNames, encoding, numVars);
+                spssFreeVarNamesImpl(ptrNames, cVarTypes, numVars);
             }
             return result;
         }

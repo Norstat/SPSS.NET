@@ -133,6 +133,9 @@
     <None Include="SAVs\da.sav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="SAVs\nb_utf8.sav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="SAVs\pl.sav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
