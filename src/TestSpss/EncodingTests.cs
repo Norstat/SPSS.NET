@@ -16,8 +16,8 @@ namespace Spss.Testing
         //
         // Note to self: TestDriven.Net may keep files open and causing tests to fail. Close all TestDriven.Net instances and try again.
 
-        private const string Skip = null; // all tests enabaled
-        //private const string Skip = "All tests disabled";
+        //private const string Skip = null; // all tests enabled
+        private const string Skip = "All tests disabled";
 
         [Fact(Skip=Skip)]
         public void ReadDanishFile()
@@ -173,7 +173,7 @@ namespace Spss.Testing
                 foreach (var lbl in getLabels())
                 {
                     var name = "Q" + index++;
-                    SpssSafeWrapper.spssSetVarName(handle, name, 0);
+                    SpssSafeWrapper.spssSetVarName(handle, name, 0, encoding);
                     SpssSafeWrapper.spssSetVarLabel(handle, name, lbl, encoding);
                 }
                 SpssThinWrapper.spssCommitHeaderImpl(handle);

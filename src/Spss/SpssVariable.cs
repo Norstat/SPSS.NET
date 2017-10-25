@@ -12,6 +12,8 @@ namespace Spss
     /// </summary>
     public abstract class SpssVariable
     {
+        public Encoding Encoding { get; set; } = Encoding.Default;
+
         /// <summary>
         /// Creates an instance of the <see cref="SpssNumericVariable"/> class.
         /// </summary>
@@ -36,7 +38,7 @@ namespace Spss
         {
             if (varName == null || varName.Length == 0)
                 throw new ArgumentNullException("varName");
-            ReturnCode result = SpssSafeWrapper.spssGetVarHandle(FileHandle, varName, out variableHandle, Encoding.Default);
+            ReturnCode result = SpssSafeWrapper.spssGetVarHandle(FileHandle, varName, out variableHandle, Encoding);
 
             switch (result)
             {
@@ -58,8 +60,8 @@ namespace Spss
         {
             FormatTypeCode writeFormat, printFormat;
             int writeDecimal, writeWidth, printDecimal, printWidth;
-            SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarWriteFormat(parent.Document.Handle, varName, out writeFormat, out writeDecimal, out writeWidth), "spssGetVarWriteFormat");
-            SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarPrintFormat(parent.Document.Handle, varName, out printFormat, out printDecimal, out printWidth), "spssGetVarPrintFormat");
+            SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarWriteFormat(parent.Document.Handle, varName, out writeFormat, out writeDecimal, out writeWidth, Encoding.Default), "spssGetVarWriteFormat");
+            SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarPrintFormat(parent.Document.Handle, varName, out printFormat, out printDecimal, out printWidth, Encoding.Default), "spssGetVarPrintFormat");
 
             SpssVariable variable;
             switch (varType)
@@ -159,7 +161,7 @@ namespace Spss
                 // may not have been loaded yet.
                 if (label == null && IsCommitted)
                 {
-                    SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarLabel(FileHandle, Name, out label, Encoding.Default), "spssGetVarLabel", ReturnCode.SPSS_NO_LABEL);
+                    SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarLabel(FileHandle, Name, out label, Encoding), "spssGetVarLabel", ReturnCode.SPSS_NO_LABEL);
                 }
 
                 return label ?? string.Empty;
@@ -267,7 +269,7 @@ namespace Spss
                 // If this variable was read from an existing file, get it.
                 if (this.Handle >= 0)
                 {
-                    SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarAlignment(this.FileHandle, this.Name, out alignment), "spssGetVarAlignment");
+                    SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarAlignment(this.FileHandle, this.Name, out alignment, Encoding), "spssGetVarAlignment");
                 }
 
                 return alignment;
@@ -335,7 +337,7 @@ namespace Spss
             if (Handle >= 0) throw new InvalidOperationException("Already committed.");
 
             // Create the variable.
-            SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarName(FileHandle, Name, SpssType), "spssSetVarName");
+            SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarName(FileHandle, Name, SpssType, Encoding), "spssSetVarName");
 
             // Call the descending class to finish the details.
             Update();
@@ -350,7 +352,7 @@ namespace Spss
 
             SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarLabel(FileHandle, Name, Label), "spssSetVarLabel");
             SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarColumnWidth(FileHandle, Name, ColumnWidth), "spssSetVarColumnWidth");
-            SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarMeasureLevel(this.FileHandle, this.Name, this.MeasurementLevel), "spssSetVarMeasureLevel");
+            SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarMeasureLevel(this.FileHandle, this.Name, this.MeasurementLevel, Encoding), "spssSetVarMeasureLevel");
             SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarAlignment(this.FileHandle, this.Name, this.Alignment), "spssSetVarAlignment");
         }
         /// <summary>
@@ -389,7 +391,7 @@ namespace Spss
         private void Document_DictionaryCommitted(object sender, EventArgs e)
         {
             // Set the variable handle			
-            SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarHandle(FileHandle, Name, out variableHandle, Encoding.Default), "spssGetVarHandle");
+            SpssException.ThrowOnFailure(SpssSafeWrapper.spssGetVarHandle(FileHandle, Name, out variableHandle, Encoding), "spssGetVarHandle");
         }
         #endregion
     }

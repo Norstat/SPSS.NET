@@ -63,7 +63,7 @@ namespace Spss
         protected internal override void Update()
         {
             foreach (var pair in this)
-                SpssSafeWrapper.spssSetVarCValueLabel(FileHandle, Variable.Name, pair.Key, pair.Value);
+                SpssSafeWrapper.spssSetVarCValueLabel(FileHandle, Variable.Name, pair.Key, pair.Value, Encoding.Default);
         }
 
         /// <summary>

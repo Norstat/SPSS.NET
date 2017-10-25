@@ -902,7 +902,7 @@ namespace Spss
         /// <remarks>
         /// This function reports the value of the alignment attribute of a variable.
         /// </remarks>
-        protected delegate ReturnCode spssGetVarAlignmentDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, out AlignmentCode alignment);
+        protected delegate ReturnCode spssGetVarAlignmentDelegate(int handle, IntPtr varName, out AlignmentCode alignment);
         protected static spssGetVarAlignmentDelegate spssGetVarAlignmentImpl;
 
         /// <summary>
@@ -1005,7 +1005,7 @@ namespace Spss
         /// hold the longest possible value label (60 characters plus the null terminator). To get value
         /// labels more than 60 characters long, use the <see cref="spssGetVarCValueLabelLongDelegate"/> function.
         /// </remarks>
-        protected delegate ReturnCode spssGetVarCValueLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value, [MarshalAs(UnmanagedType.VBByRefStr)] ref string label);
+        protected delegate ReturnCode spssGetVarCValueLabelDelegate(int handle, IntPtr varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value, [MarshalAs(UnmanagedType.VBByRefStr)] ref string label);
         protected static spssGetVarCValueLabelDelegate spssGetVarCValueLabelImpl;
 
         /// <summary>
@@ -1047,7 +1047,7 @@ namespace Spss
         /// of data bytes (excluding the null terminator) actually stored. If an error is detected, the
         /// label is returned as a null string, and the length is returned as 0.
         /// </remarks>
-        protected delegate ReturnCode spssGetVarCValueLabelLongDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value, /*[MarshalAs(UnmanagedType.VBByRefStr)] ref string*/ IntPtr labelBuff, int lenBuff, out int lenLabel);
+        protected delegate ReturnCode spssGetVarCValueLabelLongDelegate(int handle, IntPtr varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value, /*[MarshalAs(UnmanagedType.VBByRefStr)] ref string*/ IntPtr labelBuff, int lenBuff, out int lenLabel);
         protected static spssGetVarCValueLabelLongDelegate spssGetVarCValueLabelLongImpl;
 
         /// <summary>
@@ -1090,7 +1090,7 @@ namespace Spss
         /// are no longer needed, <see cref="spssFreeVarCValueLabelsDelegate"/> should be called to free the memory.
         /// </remarks>
         [CLSCompliant(false)]
-        unsafe protected delegate ReturnCode spssGetVarCValueLabelsDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, out /*char***/ IntPtr values, out /*char***/ IntPtr labels, out int numLabels);
+        unsafe protected delegate ReturnCode spssGetVarCValueLabelsDelegate(int handle, IntPtr varName, out /*char***/ IntPtr values, out /*char***/ IntPtr labels, out int numLabels);
         [CLSCompliant(false)]
         protected static spssGetVarCValueLabelsDelegate spssGetVarCValueLabelsImpl;
 
@@ -1210,7 +1210,7 @@ namespace Spss
         /// the spssGetVarLabelLong function.
         /// </remarks>
         //! TODO Check if change of 3rd parameter works (changed out to ref as otherwise Marshal.GetDelegateForFunctionPointer fails).
-        public delegate ReturnCode spssGetVarLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varLabel);
+        public delegate ReturnCode spssGetVarLabelDelegate(int handle, IntPtr varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varLabel);
         public static spssGetVarLabelDelegate spssGetVarLabelImplImpl;
 
         /// <summary>
@@ -1349,7 +1349,7 @@ namespace Spss
         /// hold the longest possible value label (60 characters) plus the terminator. To get value labels
         /// more than 60 characters long, use the <see cref="spssGetVarNValueLabelLongDelegate"/> function.
         /// </remarks>
-        protected delegate ReturnCode spssGetVarNValueLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, double value, [MarshalAs(UnmanagedType.VBByRefStr)] ref string label);
+        protected delegate ReturnCode spssGetVarNValueLabelDelegate(int handle, IntPtr varName, double value, [MarshalAs(UnmanagedType.VBByRefStr)] ref string label);
         protected static spssGetVarNValueLabelDelegate spssGetVarNValueLabelImpl;
 
         /// <summary>
@@ -1389,7 +1389,7 @@ namespace Spss
         /// actually stored. If an error is detected, the label is returned as a null string, and the
         /// length is returned as 0.
         /// </remarks>
-        protected delegate ReturnCode spssGetVarNValueLabelLongDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, double value, /*[MarshalAs(UnmanagedType.VBByRefStr)] ref string*/ IntPtr labelBuff, int lenBuff, out int lenLabel);
+        protected delegate ReturnCode spssGetVarNValueLabelLongDelegate(int handle, IntPtr varName, double value, /*[MarshalAs(UnmanagedType.VBByRefStr)] ref string*/ IntPtr labelBuff, int lenBuff, out int lenLabel);
         protected static spssGetVarNValueLabelLongDelegate spssGetVarNValueLabelLong;
 
         /// <summary>
@@ -1464,7 +1464,7 @@ namespace Spss
         /// places, and field width are returned as *<paramref>printType</paramref>, 
         /// *<paramref>printDec</paramref>, and *<paramref>printWid</paramref>, respectively.
         /// </remarks>
-        protected delegate ReturnCode spssGetVarPrintFormatDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, out FormatTypeCode printType, out int printDec, out int printWidth);
+        protected delegate ReturnCode spssGetVarPrintFormatDelegate(int handle, IntPtr varName, out FormatTypeCode printType, out int printDec, out int printWidth);
         protected static spssGetVarPrintFormatDelegate spssGetVarPrintFormatImpl;
 
         /// <summary>
@@ -1535,7 +1535,7 @@ namespace Spss
         /// places, and field width are returned as *writeType, *writeDec, and *writeWid,
         /// respectively.
         /// </remarks>
-        protected delegate ReturnCode spssGetVarWriteFormatDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, out FormatTypeCode writeType, out int writeDec, out int writeWidth);
+        protected delegate ReturnCode spssGetVarWriteFormatDelegate(int handle, IntPtr varName, out FormatTypeCode writeType, out int writeDec, out int writeWidth);
         protected static spssGetVarWriteFormatDelegate spssGetVarWriteFormatImpl;
 
         /// <summary>
@@ -2197,7 +2197,7 @@ namespace Spss
         /// variable. The label should be a null-terminated string not exceeding 60 characters in
         /// length.
         /// </remarks>
-        protected delegate ReturnCode spssSetVarCValueLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value, [MarshalAs(UnmanagedType.VBByRefStr)] ref string label);
+        protected delegate ReturnCode spssSetVarCValueLabelDelegate(int handle, IntPtr varName, [MarshalAs(UnmanagedType.VBByRefStr)] ref string value, [MarshalAs(UnmanagedType.VBByRefStr)] ref string label);
         protected static spssSetVarCValueLabelDelegate spssSetVarCValueLabelImpl;
 
         /// <summary>
@@ -2253,7 +2253,7 @@ namespace Spss
         /// <remarks>
         /// This function sets the label of a variable.
         /// </remarks>
-        protected delegate ReturnCode spssSetVarLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, [In] IntPtr varLabel);
+        protected delegate ReturnCode spssSetVarLabelDelegate(int handle, IntPtr varName, [In] IntPtr varLabel);
         protected static spssSetVarLabelDelegate spssSetVarLabelImpl;
 
         /// <summary>
@@ -2286,7 +2286,7 @@ namespace Spss
         /// <remarks>
         /// This function sets the value of the measurement level attribute of a variable.
         /// </remarks>
-        protected delegate ReturnCode spssSetVarMeasureLevelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, int measureLevel);
+        protected delegate ReturnCode spssSetVarMeasureLevelDelegate(int handle, IntPtr varName, int measureLevel);
         protected static spssSetVarMeasureLevelDelegate spssSetVarMeasureLevelImpl;
 
         /// <summary>
@@ -2349,7 +2349,7 @@ namespace Spss
         /// For better readability, macros SPSS_NUMERIC and SPSS_STRING( length) may be
         /// used as values for varLength.
         /// </remarks>
-        protected delegate ReturnCode spssSetVarNameDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, int varType);
+        protected delegate ReturnCode spssSetVarNameDelegate(int handle, IntPtr varName, int varType);
         protected static spssSetVarNameDelegate spssSetVarNameImpl;
 
         /// <summary>
@@ -2433,7 +2433,7 @@ namespace Spss
         /// variable. The label should be a null-terminated string not exceeding 60 characters in
         /// length.
         /// </remarks>
-        protected delegate ReturnCode spssSetVarNValueLabelDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, double value, [In] IntPtr label);
+        protected delegate ReturnCode spssSetVarNValueLabelDelegate(int handle, IntPtr varName, double value, [In] IntPtr label);
         protected static spssSetVarNValueLabelDelegate spssSetVarNValueLabelImpl;
 
         /// <summary>
@@ -2469,7 +2469,7 @@ namespace Spss
         /// <remarks>
         /// This function sets the print format of a variable.
         /// </remarks>
-        protected delegate ReturnCode spssSetVarPrintFormatDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, FormatTypeCode printType, int printDec, int printWidth);
+        protected delegate ReturnCode spssSetVarPrintFormatDelegate(int handle, IntPtr varName, FormatTypeCode printType, int printDec, int printWidth);
         protected static spssSetVarPrintFormatDelegate spssSetVarPrintFormatImpl;
 
         /// <summary>
@@ -2504,7 +2504,7 @@ namespace Spss
         /// <remarks>
         /// This function sets the write format of a variable.
         /// </remarks>
-        protected delegate ReturnCode spssSetVarWriteFormatDelegate(int handle, [MarshalAs(UnmanagedType.VBByRefStr)] ref string varName, FormatTypeCode writeType, int writeDec, int writeWidth);
+        protected delegate ReturnCode spssSetVarWriteFormatDelegate(int handle, IntPtr varName, FormatTypeCode writeType, int writeDec, int writeWidth);
         protected static spssSetVarWriteFormatDelegate spssSetVarWriteFormatImpl;
 
         /// <summary>

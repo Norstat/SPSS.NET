@@ -408,9 +408,12 @@ namespace Spss
         /// <remarks>
         /// This function reports the value of the alignment attribute of a variable.
         /// </remarks>
-        public static ReturnCode spssGetVarAlignment(int handle, string varName, out AlignmentCode alignment)
+        public static ReturnCode spssGetVarAlignment(int handle, string varName, out AlignmentCode alignment, Encoding encoding)
         {
-            return SpssThinWrapper.spssGetVarAlignmentImpl(handle, ref varName, out alignment);
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                return SpssThinWrapper.spssGetVarAlignmentImpl(handle, ptrName, out alignment);
+            }
         }
         /// <summary>
         /// Gets the missing values of a short string variable.
@@ -711,9 +714,10 @@ namespace Spss
         public static ReturnCode spssGetVarCValueLabel(int handle, string varName, string value, out string label, Encoding encoding)
         {
             using (var str = new EncodedString(SPSS_MAX_VALLABEL))
+            using(var ptrName = new EncodedString(varName, encoding))
             {
                 int len;
-                ReturnCode result = spssGetVarCValueLabelLongImpl(handle, ref varName, ref value, str, SPSS_MAX_VALLABEL, out len); // len excluding \0 terminator
+                ReturnCode result = spssGetVarCValueLabelLongImpl(handle, ptrName, ref value, str, SPSS_MAX_VALLABEL, out len); // len excluding \0 terminator
                 label = str.ToString(encoding, len);
                 return result;
             }
@@ -748,9 +752,10 @@ namespace Spss
         public static ReturnCode spssGetVarNValueLabel(int handle, string varName, double value, out string label, Encoding encoding)
         {
             using (var str = new EncodedString(SPSS_MAX_VALLABEL))
+            using (var ptrName = new EncodedString(varName, encoding))
             {
                 int len;
-                ReturnCode result = spssGetVarNValueLabelLong(handle, ref varName, value, str, SPSS_MAX_VALLABEL, out len); // len excluding \0 terminator
+                ReturnCode result = spssGetVarNValueLabelLong(handle, ptrName, value, str, SPSS_MAX_VALLABEL, out len); // len excluding \0 terminator
                 label = str.ToString(encoding, len);
                 return result;
             }
@@ -786,9 +791,12 @@ namespace Spss
         /// places, and field width are returned as <paramref>printType</paramref>, 
         /// <paramref>printDec</paramref>, and <paramref>printWid</paramref>, respectively.
         /// </remarks>
-        public static ReturnCode spssGetVarPrintFormat(int handle, string varName, out FormatTypeCode printType, out int printDec, out int printWidth)
+        public static ReturnCode spssGetVarPrintFormat(int handle, string varName, out FormatTypeCode printType, out int printDec, out int printWidth, Encoding encoding)
         {
-            return SpssThinWrapper.spssGetVarPrintFormatImpl(handle, ref varName, out printType, out printDec, out printWidth);
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                return SpssThinWrapper.spssGetVarPrintFormatImpl(handle, ptrName, out printType, out printDec, out printWidth);
+            }
         }
         /// <summary>
         /// Gets the write format of a variable.
@@ -820,9 +828,12 @@ namespace Spss
         /// places, and field width are returned as writeType, writeDec, and writeWid,
         /// respectively.
         /// </remarks>
-        public static ReturnCode spssGetVarWriteFormat(int handle, string varName, out FormatTypeCode writeType, out int writeDec, out int writeWidth)
+        public static ReturnCode spssGetVarWriteFormat(int handle, string varName, out FormatTypeCode writeType, out int writeDec, out int writeWidth, Encoding encoding)
         {
-            return SpssThinWrapper.spssGetVarWriteFormatImpl(handle, ref varName, out writeType, out writeDec, out writeWidth);
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                return SpssThinWrapper.spssGetVarWriteFormatImpl(handle, ptrName, out writeType, out writeDec, out writeWidth);
+            }
         }
         /// <summary>
         /// Opens an SPSS file for appending cases.
@@ -1339,8 +1350,9 @@ namespace Spss
         public static ReturnCode spssSetVarLabel(int handle, string varName, string varLabel, Encoding encoding)
         {
             using (var lbl = new EncodedString(varLabel, encoding))
+            using (var ptrName = new EncodedString(varName, encoding))
             {
-                return SpssThinWrapper.spssSetVarLabelImpl(handle, ref varName, lbl);
+                return SpssThinWrapper.spssSetVarLabelImpl(handle, ptrName, lbl);
             }
         }
 
@@ -1404,9 +1416,12 @@ namespace Spss
         /// For better readability, macros SPSS_NUMERIC and SPSS_STRING( length) may be
         /// used as values for varLength.
         /// </remarks>
-        public static ReturnCode spssSetVarName(int handle, string varName, int varType)
+        public static ReturnCode spssSetVarName(int handle, string varName, int varType, Encoding encoding)
         {
-            return SpssThinWrapper.spssSetVarNameImpl(handle, ref varName, varType);
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                return SpssThinWrapper.spssSetVarNameImpl(handle, ptrName, varType);
+            }
         }
 
         /// <summary>
@@ -1442,9 +1457,12 @@ namespace Spss
         /// This function changes or adds a value label for the specified value of a short string
         /// variable. The label should not exceed 60 characters in length.
         /// </remarks>
-        public static ReturnCode spssSetVarCValueLabel(int handle, string varName, string value, string label)
+        public static ReturnCode spssSetVarCValueLabel(int handle, string varName, string value, string label, Encoding encoding)
         {
-            return SpssThinWrapper.spssSetVarCValueLabelImpl(handle, ref varName, ref value, ref label);
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                return SpssThinWrapper.spssSetVarCValueLabelImpl(handle, ptrName, ref value, ref label);
+            }
         }
         /// <summary>
         /// Sets the variable sets information in a data file.
@@ -1497,9 +1515,12 @@ namespace Spss
         /// <remarks>
         /// This function sets the value of the measurement level attribute of a variable.
         /// </remarks>
-        public static ReturnCode spssSetVarMeasureLevel(int handle, string varName, MeasurementLevelCode measureLevel)
+        public static ReturnCode spssSetVarMeasureLevel(int handle, string varName, MeasurementLevelCode measureLevel, Encoding encoding)
         {
-            return SpssThinWrapper.spssSetVarMeasureLevelImpl(handle, ref varName, (int)measureLevel);
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                return SpssThinWrapper.spssSetVarMeasureLevelImpl(handle, ptrName, (int) measureLevel);
+            }
         }
         /// <summary>
         /// Sets the missing values for a numeric variable.
@@ -1623,8 +1644,9 @@ namespace Spss
         public static ReturnCode spssSetVarNValueLabel(int handle, string varName, double value, string label, Encoding encoding)
         {
             using (var lbl = new EncodedString(label, encoding))
+            using (var ptrName = new EncodedString(varName, encoding))
             {
-                return SpssThinWrapper.spssSetVarNValueLabelImpl(handle, ref varName, value, lbl);
+                return SpssThinWrapper.spssSetVarNValueLabelImpl(handle, ptrName, value, lbl);
             }
         }
 
@@ -1661,9 +1683,12 @@ namespace Spss
         /// <remarks>
         /// This function sets the print format of a variable.
         /// </remarks>
-        public static ReturnCode spssSetVarPrintFormat(int handle, string varName, FormatTypeCode printType, int printDec, int printWidth)
+        public static ReturnCode spssSetVarPrintFormat(int handle, string varName, FormatTypeCode printType, int printDec, int printWidth, Encoding encoding)
         {
-            return SpssThinWrapper.spssSetVarPrintFormatImpl(handle, ref varName, printType, printDec, printWidth);
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                return SpssThinWrapper.spssSetVarPrintFormatImpl(handle, ptrName, printType, printDec, printWidth);
+            }
         }
 
         /// <summary>
@@ -1698,9 +1723,12 @@ namespace Spss
         /// <remarks>
         /// This function sets the write format of a variable.
         /// </remarks>
-        public static ReturnCode spssSetVarWriteFormat(int handle, string varName, FormatTypeCode writeType, int writeDec, int writeWidth)
+        public static ReturnCode spssSetVarWriteFormat(int handle, string varName, FormatTypeCode writeType, int writeDec, int writeWidth, Encoding encoding)
         {
-            return SpssThinWrapper.spssSetVarWriteFormatImpl(handle, ref varName, writeType, writeDec, writeWidth);
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                return SpssThinWrapper.spssSetVarWriteFormatImpl(handle, ptrName, writeType, writeDec, writeWidth);
+            }
         }
         /// <summary>
         /// Reads in the raw data for an entire case.
@@ -1998,7 +2026,11 @@ namespace Spss
             int numLabels;
             IntPtr ptrLabels;
             IntPtr ptrValues;
-            var result = SpssThinWrapper.spssGetVarCValueLabelsImpl(handle, ref varName, out ptrValues, out ptrLabels, out numLabels);
+            ReturnCode result;
+            using (var ptrName = new EncodedString(varName, encoding))
+            {
+                result = SpssThinWrapper.spssGetVarCValueLabelsImpl(handle, ptrName, out ptrValues, out ptrLabels, out numLabels);
+            }
             if (result == ReturnCode.SPSS_NO_LABELS)
             {
                 values = new string[0];
@@ -2088,17 +2120,17 @@ namespace Spss
         [Obsolete("Use spssSetVarWriteFormat instead.")]
         public static void SetVarWriteFormat(int handle, string varName, FormatTypeCode writeType, int writeDec, int writeWidth)
         {
-            SpssException.ThrowOnFailure(spssSetVarWriteFormat(handle, varName, writeType, writeDec, writeWidth), "spssSetVarWriteFormat");
+            SpssException.ThrowOnFailure(spssSetVarWriteFormat(handle, varName, writeType, writeDec, writeWidth, Encoding.Default), "spssSetVarWriteFormat");
         }
         [Obsolete("Use spssSetVarPrintFormat instead.")]
         public static void SetVarPrintFormat(int handle, string varName, FormatTypeCode printType, int printDec, int printWidth)
         {
-            SpssException.ThrowOnFailure(spssSetVarPrintFormat(handle, varName, printType, printDec, printWidth), "spssSetVarPrintFormat");
+            SpssException.ThrowOnFailure(spssSetVarPrintFormat(handle, varName, printType, printDec, printWidth, Encoding.Default), "spssSetVarPrintFormat");
         }
         [Obsolete("Use spssSetVarName instead.")]
         public static void SetVarName(int handle, string varName, int varType)
         {
-            SpssException.ThrowOnFailure(spssSetVarName(handle, varName, varType), "spssSetVarName");
+            SpssException.ThrowOnFailure(spssSetVarName(handle, varName, varType, Encoding.Default), "spssSetVarName");
         }
         [Obsolete("Use spssSetVarLabel instead.")]
         public static void SetVarLabel(int handle, string varName, string varLabel)

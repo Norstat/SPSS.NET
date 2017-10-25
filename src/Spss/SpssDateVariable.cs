@@ -212,8 +212,8 @@ namespace Spss
                 missingValues[1],
                 missingValues[2]), "spssSetVarNMissingValues");
 
-            SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarPrintFormat(FileHandle, Name, this.PrintFormat, 4, this.PrintWidth), "spssSetVarPrintFormat");
-            SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarWriteFormat(FileHandle, Name, this.WriteFormat, 4, this.WriteWidth), "spssSetVarWriteFormat");
+            SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarPrintFormat(FileHandle, Name, this.PrintFormat, 4, this.PrintWidth, Encoding), "spssSetVarPrintFormat");
+            SpssException.ThrowOnFailure(SpssSafeWrapper.spssSetVarWriteFormat(FileHandle, Name, this.WriteFormat, 4, this.WriteWidth, Encoding), "spssSetVarWriteFormat");
         }
 
         protected internal static bool IsDateVariable(FormatTypeCode writeType)
